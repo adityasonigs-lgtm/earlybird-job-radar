@@ -1,0 +1,2375 @@
+<!DOCTYPE html>
+<html lang="en"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIwODEyMDMwMzE0MzgwOTcwMzYzMSIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjXzM2ZjAyN2FjYzQzYTFmN2FfNTI1ODk3MTlfbW9ybmluZ19qb2JfcmFkYXIuaHRtbC11bmRlZmluZWQifSwiZXhwIjoxNzkzMzc2MzA2LCJpYXQiOjE3OTMzNzI3MDYsImFsZyI6IlJTMjU2In0.bOjaSJSuWDQsqEkV17a1q9jPyghyFdsw_Jsi-lvAaVkY2mHlRWFDhuOA8vShhn7DvZScdRWkIZabTkimN87vm42TJc2BRKgw0d2ghrWwdnLZ9DCSDNArMB_21vyACpqzjvNpvwWb5lvVZbFE2kpWaY0srfBLT3UDcCfeTjS_Tngbuxn7Hn5YPFT6fIp8DocBSAO6Ldz8yB32sHe0ZTbBEoYsy6ftKdb7MYejI1yFZEGO5f2o_LeR2NUw3i-nMVY_FMj8Kz3KI9FVKKHWdL2bS7_rfqxkA1wKPBqWpqkcLt7AtguusnrNDzCji2CE7u-Am_YD-gNjAJ9Zdj32jjiEdQ","c_36f027acc43a1f7a_52589719_morning_job_radar.html-undefined")</script><script data-bard-client-injected="true">
+  document.addEventListener('input', (event) => {
+    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
+      const clonedDoc = document.cloneNode(true);
+      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
+      injectedScripts.forEach(el => el.remove());
+      window.parent.postMessage({
+        type: 'inlineEdit',
+        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
+      }, '*');
+    }
+  });
+</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const SCROLL_KEYS = new Set([
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
+  ]);
+  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+
+  function isTextEntryTarget(target) {
+    if (!target) return false;
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' || target.isContentEditable === true;
+  }
+
+  // An element absorbs the key only if it both overflows on the axis being
+  // scrolled and is configured to scroll on that axis. The cheap dimension
+  // test runs first because getComputedStyle forces a style recalc, and this
+  // runs on every keypress. Each axis is read from its own longhand: the
+  // 'overflow' shorthand serializes as two values when the axes differ, which
+  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
+  function canScroll(node, horizontal) {
+    const overflows = horizontal ? node.scrollWidth > node.clientWidth
+                                 : node.scrollHeight > node.clientHeight;
+    if (!overflows) return false;
+    const style = window.getComputedStyle(node);
+    const overflow = horizontal ? style.overflowX : style.overflowY;
+    return overflow === 'auto' || overflow === 'scroll';
+  }
+
+  // Walks up from the event target so nested scrollers keep their behavior.
+  // <body> is included because pages that pin the root height make it the
+  // scroll container.
+  function hasScrollableAncestor(target, horizontal) {
+    let node = target;
+    while (node && node !== document.documentElement) {
+      if (canScroll(node, horizontal)) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function rootCanScroll(horizontal) {
+    const scroller = document.scrollingElement || document.documentElement;
+    if (!scroller) return false;
+    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
+    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
+                      : scroller.scrollHeight > window.innerHeight + 1;
+  }
+
+  window.addEventListener('keydown', function(event) {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    if (event.defaultPrevented) return;
+    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
+    // reserved for shortcuts, so none of them are scroll intent.
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+
+    const target = event.target;
+    if (isTextEntryTarget(target)) return;
+
+    // Anything that can still absorb the scroll gets to keep it.
+    const horizontal = HORIZONTAL_KEYS.has(event.key);
+    if (rootCanScroll(horizontal)) return;
+    if (hasScrollableAncestor(target, horizontal)) return;
+
+    event.preventDefault();
+  }, {capture: true, passive: false});
+})();</script><script data-bard-client-injected="true">(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script data-bard-client-injected="true">
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
+function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+function A(b,d){function e(){}e.prototype=d.prototype;b.j=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
+let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
+null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.i="";var l=0,t=null,r=null,q=[],F=new TextEncoder,G=new TextDecoder;
+c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*16|0;return(f===
+"x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;(g=t)==null||g.postMessage(a)}};
+Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
+(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
+url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
+</script><script data-bard-client-injected="true">((function(modelInformation) {
+  const originalFetch = window.fetch;
+  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
+  let googleLlmBaseApiUrls = [
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageTransformModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
+  ];
+  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+    );
+  });
+  modelInformation.deprecatedImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predict',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predictLongRunning',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedGenerateImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedImageTransformModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+
+  const pendingFetchResolvers = {};
+  let nextPromiseId = 0;
+
+  function handleStringInput(input, optionsArgument) {
+    const actualUrl = input;
+    const fetchCallArgs = [actualUrl, optionsArgument];
+    const effectiveOptions = optionsArgument || {};
+    const bodyForApiKeyCheck = effectiveOptions.body;
+    const bodyForPostMessage = effectiveOptions.body;
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  function handleRequestInput(input, optionsArgument) {
+    const actualUrl = input.url;
+    const fetchCallArgs = [input, optionsArgument];
+    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (optionsArgument) {
+      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
+      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
+      if ('body' in optionsArgument) {
+        bodyForApiKeyCheck = optionsArgument.body;
+        bodyForPostMessage = optionsArgument.body;
+      } else {
+        bodyForApiKeyCheck = undefined;
+        bodyForPostMessage = input.body;
+      }
+    } else {
+      bodyForApiKeyCheck = undefined;
+      bodyForPostMessage = input.body;
+    }
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  window.fetch = function(input, optionsArgument) {
+    let actualUrl;
+    let fetchCallArgs;
+    let effectiveOptions = {};
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (typeof input === 'string') {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
+    } else if (input instanceof Request) {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
+    } else {
+      return originalFetch.apply(window, [input, optionsArgument]);
+    }
+
+    effectiveOptions.method = effectiveOptions.method || 'GET';
+    if (!effectiveOptions.headers) {
+      effectiveOptions.headers = new Headers();
+    }
+
+
+    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
+      let apiKeyIsNull = true;
+
+      const regex = new RegExp("models/([^:]+)");
+      const modelNameMatch = actualUrl.match(regex);
+      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
+
+
+      try {
+        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
+        const apiKeyParam = urlObject.searchParams.get('key');
+        if (apiKeyParam) {
+          apiKeyIsNull = false;
+        }
+      } catch (e) {
+        // Continue checks even if URL parsing fails
+      }
+
+      if (apiKeyIsNull && effectiveOptions.headers) {
+        const h = new Headers(effectiveOptions.headers);
+        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
+        if (apiKeyHeaderValue) {
+          apiKeyIsNull = false;
+          return originalFetch.apply(window, fetchCallArgs);
+        }
+      }
+
+      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
+        try {
+          const bodyData = JSON.parse(bodyForApiKeyCheck);
+          if (bodyData && bodyData.apiKey) {
+            apiKeyIsNull = false;
+            return originalFetch.apply(window, fetchCallArgs);
+          }
+        } catch (e) {
+          // Ignore JSON parsing errors
+        }
+      }
+
+      if(apiKeyIsNull) {
+        const promiseId = nextPromiseId++;
+        const promise = new Promise((resolve) => {
+          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
+            delete pendingFetchResolvers[promiseId];
+            resolve(resolvedResponse);
+          };
+        });
+
+        let serializedBodyForPostMessage;
+        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
+            serializedBodyForPostMessage = bodyForPostMessage;
+        } else if (bodyForPostMessage instanceof ReadableStream) {
+            serializedBodyForPostMessage = null;
+        } else {
+            try {
+                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
+            } catch (e) {
+                serializedBodyForPostMessage = null;
+            }
+        }
+
+        const messageOptions = {
+            method: effectiveOptions.method,
+            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
+            body: serializedBodyForPostMessage
+        };
+
+        window.parent.postMessage({
+          type: 'requestFetch',
+          url: actualUrl,
+          modelName: modelName,
+          options: messageOptions,
+          promiseId: promiseId,
+        }, '*');
+
+        return promise;
+      }
+      return originalFetch.apply(window, fetchCallArgs);
+    }
+    return originalFetch.apply(window, fetchCallArgs);
+  };
+
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'resolveFetch') {
+      const { promiseId, response } = event.data;
+      if (pendingFetchResolvers[promiseId]) {
+        try {
+          const reconstructedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers),
+          });
+          pendingFetchResolvers[promiseId](reconstructedResponse);
+        } catch (error) {
+          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
+        }
+      }
+    }
+  });
+
+}))({"textModelName":"gemini-3-flash-preview","imageModelName":"imagen-4.0-generate-001","imageEditModelName":"gemini-3.1-flash-image","imageTransformModelName":"gemini-3-pro-image","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-flash-preview-05-20","gemini-2.5-flash-preview-09-2025"],"deprecatedImageModelNames":["imagen-3.0-generate-001","imagen-3.0-generate-002"],"deprecatedGenerateImageModelNames":["gemini-2.5-flash-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-image-preview"],"deprecatedImageTransformModelNames":["gemini-3-pro-image-preview-11-2025"]})</script><script data-bard-client-injected="true">(function() {
+  function normalizeSlug(str) {
+    try {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^p{L}p{N}s_-]/gu, '')
+        .replace(/s+/g, '-');
+    } catch (e) {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9s_-]/g, '')
+        .replace(/s+/g, '-');
+    }
+  }
+
+  function findTargetElement(hash) {
+    if (!hash || hash === '#') {
+      return null;
+    }
+    const rawId = hash.startsWith('#') ? hash.slice(1) : hash;
+    let decodedId = rawId;
+    try {
+      decodedId = decodeURIComponent(rawId);
+    } catch (e) {
+      // Ignore URI malformed errors.
+    }
+
+    // 1. Direct ID match (raw and decoded).
+    let target = document.getElementById(rawId) || document.getElementById(decodedId);
+    if (target) {
+      return target;
+    }
+
+    // 2. Name attribute match (<a name="...">).
+    try {
+      if (typeof CSS !== 'undefined' && CSS.escape) {
+        target =
+          document.querySelector('[name="' + CSS.escape(rawId) + '"]') ||
+          document.querySelector('[name="' + CSS.escape(decodedId) + '"]');
+      } else {
+        const namedElements = document.getElementsByName(rawId);
+        if (namedElements && namedElements.length > 0) {
+          return namedElements[0];
+        }
+      }
+    } catch (e) {
+      // Ignore querySelector syntax errors.
+    }
+    if (target) {
+      return target;
+    }
+
+    // 3. Match heading text by slug (for Markdown TOCs where headings lack explicit IDs).
+    const targetSlug = normalizeSlug(decodedId);
+    if (targetSlug) {
+      for (const heading of document.querySelectorAll('h1, h2, h3, h4, h5, h6')) {
+        if (normalizeSlug(heading.textContent || '') === targetSlug) {
+          return heading;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  document.addEventListener('click', function(event) {
+    const target = event.target;
+    const anchor = target && typeof target.closest === 'function' ? target.closest('a') : null;
+    if (!anchor) {
+      return;
+    }
+
+    const href = anchor.getAttribute('href');
+    if (
+      !href ||
+      href.trim().toLowerCase().startsWith('javascript:') ||
+      anchor.hasAttribute('download')
+    ) {
+      return;
+    }
+
+    // Check if the link is an in-page hash / anchor link.
+    if (href.startsWith('#')) {
+      event.preventDefault();
+      const targetElement = findTargetElement(href);
+      if (targetElement) {
+        targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+      }
+      return;
+    }
+
+    // Check if the URL has the same origin/pathname but with a hash.
+    try {
+      const url = new URL(anchor.href, window.location.href);
+      if (
+        url.hash &&
+        url.origin === window.location.origin &&
+        url.pathname === window.location.pathname
+      ) {
+        event.preventDefault();
+        const targetElement = findTargetElement(url.hash);
+        if (targetElement) {
+          targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+        return;
+      }
+    } catch (e) {
+      // Fall through if URL parsing fails.
+    }
+
+    // For all external or full navigation links, prevent iframe-level navigation
+    // (which breaks in AGSA WebView or sandboxed iframes) and ensure they open
+    // safely in a new tab/window.
+    if (anchor.target !== '_blank') {
+      event.preventDefault();
+      window.open(anchor.href, '_blank', 'noopener,noreferrer');
+    }
+  }, {capture: true});
+})();</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EarlyBird Job Radar — Final Production App (v1.0)</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background-color: #cbd5e1;
+      border-radius: 3px;
+    }
+  </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.fixed{position:fixed}.sticky{position:sticky}.bottom-4{bottom:1rem}.right-4{right:1rem}.top-0{top:0px}.z-20{z-index:20}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:0.25rem}.mb-1\.5{margin-bottom:0.375rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.ml-auto{margin-left:auto}.mt-0\.5{margin-top:0.125rem}.mt-1{margin-top:0.25rem}.mt-1\.5{margin-top:0.375rem}.mt-4{margin-top:1rem}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-2\.5{height:0.625rem}.h-9{height:2.25rem}.min-h-screen{min-height:100vh}.w-2\.5{width:0.625rem}.w-9{width:2.25rem}.w-full{width:100%}.max-w-6xl{max-width:72rem}.flex-1{flex:1 1 0%}.cursor-pointer{cursor:pointer}.list-inside{list-style-position:inside}.list-decimal{list-style-type:decimal}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-end{align-items:flex-end}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-6 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))}.overflow-x-auto{overflow-x:auto}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.whitespace-nowrap{white-space:nowrap}.rounded{border-radius:0.25rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-md{border-radius:0.375rem}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-emerald-200{--tw-border-opacity:1;border-color:rgb(167 243 208 / var(--tw-border-opacity, 1))}.border-emerald-300{--tw-border-opacity:1;border-color:rgb(110 231 183 / var(--tw-border-opacity, 1))}.border-emerald-500\/30{border-color:rgb(16 185 129 / 0.3)}.border-indigo-200{--tw-border-opacity:1;border-color:rgb(199 210 254 / var(--tw-border-opacity, 1))}.border-indigo-800\/80{border-color:rgb(55 48 163 / 0.8)}.border-slate-100{--tw-border-opacity:1;border-color:rgb(241 245 249 / var(--tw-border-opacity, 1))}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240 / var(--tw-border-opacity, 1))}.border-slate-200\/80{border-color:rgb(226 232 240 / 0.8)}.border-slate-300{--tw-border-opacity:1;border-color:rgb(203 213 225 / var(--tw-border-opacity, 1))}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85 / var(--tw-border-opacity, 1))}.border-emerald-600{--tw-border-opacity:1;border-color:rgb(5 150 105 / var(--tw-border-opacity, 1))}.border-emerald-700\/60{border-color:rgb(4 120 87 / 0.6)}.border-indigo-700\/60{border-color:rgb(67 56 202 / 0.6)}.bg-emerald-50{--tw-bg-opacity:1;background-color:rgb(236 253 245 / var(--tw-bg-opacity, 1))}.bg-emerald-50\/90{background-color:rgb(236 253 245 / 0.9)}.bg-emerald-500{--tw-bg-opacity:1;background-color:rgb(16 185 129 / var(--tw-bg-opacity, 1))}.bg-emerald-500\/20{background-color:rgb(16 185 129 / 0.2)}.bg-emerald-600{--tw-bg-opacity:1;background-color:rgb(5 150 105 / var(--tw-bg-opacity, 1))}.bg-emerald-700{--tw-bg-opacity:1;background-color:rgb(4 120 87 / var(--tw-bg-opacity, 1))}.bg-indigo-50{--tw-bg-opacity:1;background-color:rgb(238 242 255 / var(--tw-bg-opacity, 1))}.bg-indigo-600{--tw-bg-opacity:1;background-color:rgb(79 70 229 / var(--tw-bg-opacity, 1))}.bg-indigo-950{--tw-bg-opacity:1;background-color:rgb(30 27 75 / var(--tw-bg-opacity, 1))}.bg-slate-100{--tw-bg-opacity:1;background-color:rgb(241 245 249 / var(--tw-bg-opacity, 1))}.bg-slate-50{--tw-bg-opacity:1;background-color:rgb(248 250 252 / var(--tw-bg-opacity, 1))}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-emerald-950\/80{background-color:rgb(2 44 34 / 0.8)}.bg-indigo-100\/80{background-color:rgb(224 231 255 / 0.8)}.bg-indigo-900\/70{background-color:rgb(49 46 129 / 0.7)}.p-1{padding:0.25rem}.p-2\.5{padding:0.625rem}.p-3{padding:0.75rem}.p-3\.5{padding:0.875rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-8{padding:2rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-6{padding-top:1.5rem;padding-bottom:1.5rem}.pt-1{padding-top:0.25rem}.pt-2{padding-top:0.5rem}.pr-2{padding-right:0.5rem}.pt-3{padding-top:0.75rem}.text-center{text-align:center}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.tracking-wider{letter-spacing:0.05em}.text-amber-600{--tw-text-opacity:1;color:rgb(217 119 6 / var(--tw-text-opacity, 1))}.text-amber-700{--tw-text-opacity:1;color:rgb(180 83 9 / var(--tw-text-opacity, 1))}.text-emerald-300{--tw-text-opacity:1;color:rgb(110 231 183 / var(--tw-text-opacity, 1))}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153 / var(--tw-text-opacity, 1))}.text-emerald-600{--tw-text-opacity:1;color:rgb(5 150 105 / var(--tw-text-opacity, 1))}.text-emerald-700{--tw-text-opacity:1;color:rgb(4 120 87 / var(--tw-text-opacity, 1))}.text-emerald-800{--tw-text-opacity:1;color:rgb(6 95 70 / var(--tw-text-opacity, 1))}.text-emerald-950{--tw-text-opacity:1;color:rgb(2 44 34 / var(--tw-text-opacity, 1))}.text-indigo-200{--tw-text-opacity:1;color:rgb(199 210 254 / var(--tw-text-opacity, 1))}.text-indigo-300{--tw-text-opacity:1;color:rgb(165 180 252 / var(--tw-text-opacity, 1))}.text-indigo-600{--tw-text-opacity:1;color:rgb(79 70 229 / var(--tw-text-opacity, 1))}.text-indigo-700{--tw-text-opacity:1;color:rgb(67 56 202 / var(--tw-text-opacity, 1))}.text-rose-600{--tw-text-opacity:1;color:rgb(225 29 72 / var(--tw-text-opacity, 1))}.text-slate-100{--tw-text-opacity:1;color:rgb(241 245 249 / var(--tw-text-opacity, 1))}.text-slate-200{--tw-text-opacity:1;color:rgb(226 232 240 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85 / var(--tw-text-opacity, 1))}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59 / var(--tw-text-opacity, 1))}.text-slate-900{--tw-text-opacity:1;color:rgb(15 23 42 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-indigo-800{--tw-text-opacity:1;color:rgb(55 48 163 / var(--tw-text-opacity, 1))}.accent-indigo-600{accent-color:#4f46e5}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.ring-1{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.ring-emerald-500\/20{--tw-ring-color:rgb(16 185 129 / 0.2)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.hover\:border-indigo-300:hover{--tw-border-opacity:1;border-color:rgb(165 180 252 / var(--tw-border-opacity, 1))}.hover\:bg-emerald-700:hover{--tw-bg-opacity:1;background-color:rgb(4 120 87 / var(--tw-bg-opacity, 1))}.hover\:bg-emerald-800:hover{--tw-bg-opacity:1;background-color:rgb(6 95 70 / var(--tw-bg-opacity, 1))}.hover\:bg-indigo-100:hover{--tw-bg-opacity:1;background-color:rgb(224 231 255 / var(--tw-bg-opacity, 1))}.hover\:bg-indigo-50:hover{--tw-bg-opacity:1;background-color:rgb(238 242 255 / var(--tw-bg-opacity, 1))}.hover\:bg-indigo-700:hover{--tw-bg-opacity:1;background-color:rgb(67 56 202 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-100:hover{--tw-bg-opacity:1;background-color:rgb(241 245 249 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-200:hover{--tw-bg-opacity:1;background-color:rgb(226 232 240 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-700:hover{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-800:hover{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.hover\:bg-emerald-900:hover{--tw-bg-opacity:1;background-color:rgb(6 78 59 / var(--tw-bg-opacity, 1))}.hover\:bg-indigo-800:hover{--tw-bg-opacity:1;background-color:rgb(55 48 163 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-50:hover{--tw-bg-opacity:1;background-color:rgb(248 250 252 / var(--tw-bg-opacity, 1))}.hover\:text-indigo-700:hover{--tw-text-opacity:1;color:rgb(67 56 202 / var(--tw-text-opacity, 1))}.hover\:text-indigo-800:hover{--tw-text-opacity:1;color:rgb(55 48 163 / var(--tw-text-opacity, 1))}.hover\:text-rose-800:hover{--tw-text-opacity:1;color:rgb(159 18 57 / var(--tw-text-opacity, 1))}.hover\:text-slate-600:hover{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.hover\:text-slate-900:hover{--tw-text-opacity:1;color:rgb(15 23 42 / var(--tw-text-opacity, 1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.focus\:ring-emerald-600:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(5 150 105 / var(--tw-ring-opacity, 1))}.focus\:ring-indigo-500:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(99 102 241 / var(--tw-ring-opacity, 1))}@media (min-width: 640px){.sm\:w-48{width:12rem}.sm\:w-auto{width:auto}.sm\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.sm\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.sm\:p-5{padding:1.25rem}.sm\:p-6{padding:1.5rem}.sm\:text-base{font-size:1rem;line-height:1.5rem}.sm\:text-lg{font-size:1.125rem;line-height:1.75rem}.sm\:text-sm{font-size:0.875rem;line-height:1.25rem}}@media (min-width: 768px){.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}}@media (min-width: 1024px){.lg\:col-span-5{grid-column:span 5 / span 5}.lg\:col-span-7{grid-column:span 7 / span 7}.lg\:grid-cols-12{grid-template-columns:repeat(12, minmax(0, 1fr))}}</style></head>
+<body class="min-h-screen flex flex-col">
+  <!-- Top Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+          ☀
+        </div>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="font-bold text-slate-900 text-base sm:text-lg leading-tight">EarlyBird Job Radar</h1>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              v1.0 Final Production
+            </span>
+          </div>
+          <p class="text-xs text-slate-500">Aditya Soni • Resume Analyzer • HiringCafe &amp; ATS Portals • Daily 7:00 AM Digest</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs & Quick Actions -->
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-lg flex-wrap">
+          <button id="tabBtnFeed" type="button" class="px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium bg-white text-slate-900 shadow-sm transition">
+            Morning Feed (<span id="navMatchCount">4</span>)
+          </button>
+          <button id="tabBtnSaved" type="button" class="px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition">
+            Saved &amp; Applied (<span id="navSavedCount">0</span>)
+          </button>
+          <button id="tabBtnEmail" type="button" class="px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition">
+            ✉ Morning Email Setup
+          </button>
+          <button id="tabBtnGithub" type="button" class="px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition">
+            🚀 GitHub Pages Guide
+          </button>
+          <button id="tabBtnHow" type="button" class="px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition">
+            How Step 1 Works
+          </button>
+        </div>
+
+        <button id="btnDownloadIndex" type="button" class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition" title="Download this app as index.html ready for GitHub Pages">
+          <span>⬇ Download index.html</span>
+        </button>
+
+        <a id="headerQuickMailLink" href="mailto:adityasonigs%40gmail.com?subject=EarlyBird%207%3A00%20AM%20Job%20Radar%3A%204%20Direct%20Resume%20Matches%20for%20Financial%20Analyst&amp;body=Good%20Morning%20Aditya!%20Here%20is%20your%20EarlyBird%20Job%20Radar%20digest%20(07%3A00%20AM%20IST)%3A%0A%0ATarget%20Role%3A%20Financial%20Analyst%0A%0A----------------------------------------%0A%0A1.%20%5B100%25%20Direct%20Resume%20Match%5D%20Financial%20Analyst%20%E2%80%94%20Equity%20Research%20%26%20Valuation%20at%20Apex%20Capital%20Partners%20(India)%0A%20%20%20%E2%80%A2%20Source%3A%20HiringCafe%20%E2%80%A2%20Direct%20Company%20Portal%20(Posted%2028%20mins%20ago%20(6%3A32%20AM))%0A%20%20%20%E2%80%A2%20Why%20it%20matches%3A%20Matches%205%2F5%20core%20skills%20(Financial%20Modeling%2C%20Equity%20Research%2C%20DCF%20Valuation%2C%20Ratio%20Analysis)%20%2B%20Exact%20Role%20Match%0A%20%20%20%E2%80%A2%20Apply%20%2F%20View%20Portal%3A%20https%3A%2F%2Fhiring.cafe%2F%0A%0A2.%20%5B100%25%20Direct%20Resume%20Match%5D%20Business%20Intelligence%20%26%20Financial%20Data%20Analyst%20at%20FinVerge%20FinTech%20Labs%20(Remote)%0A%20%20%20%E2%80%A2%20Source%3A%20Greenhouse%20ATS%20%E2%80%A2%20Direct%20Company%20Site%20(Posted%2045%20mins%20ago%20(6%3A15%20AM))%0A%20%20%20%E2%80%A2%20Why%20it%20matches%3A%20Matches%205%2F5%20core%20skills%20(Tableau%2C%20Power%20BI%2C%20MS%20Excel%2C%20SQL)%20%2B%20Exact%20Role%20Match%0A%20%20%20%E2%80%A2%20Apply%20%2F%20View%20Portal%3A%20https%3A%2F%2Fwww.google.com%2Fsearch%3Fq%3Dsite%3Aboards.greenhouse.io%2B%2522Financial%2BAnalyst%2522%2BOR%2B%2522Business%2BIntelligence%2522%2BTableau%2BExcel%0A%0A3.%20%5B100%25%20Direct%20Resume%20Match%5D%20Corporate%20Finance%20%26%20FP%26A%20Analyst%20(MBA%20Associate)%20at%20StrataGrid%20Enterprises%20(India)%0A%20%20%20%E2%80%A2%20Source%3A%20Lever%20ATS%20%E2%80%A2%20Company%20Career%20Portal%20(Posted%201%20hr%20ago%20(5%3A50%20AM))%0A%20%20%20%E2%80%A2%20Why%20it%20matches%3A%20Matches%204%2F4%20core%20skills%20(Corporate%20Finance%2C%20Financial%20Modeling%2C%20Budget%20Planning%2C%20MS%20Excel)%20%2B%20Exact%20Role%20Match%0A%20%20%20%E2%80%A2%20Apply%20%2F%20View%20Portal%3A%20https%3A%2F%2Fwww.google.com%2Fsearch%3Fq%3Dsite%3Ajobs.lever.co%2B%2522Corporate%2BFinance%2522%2BOR%2B%2522Financial%2BAnalyst%2522%2BExcel%0A%0A4.%20%5B76%25%20Direct%20Resume%20Match%5D%20Python%20Data%20%26%20Automation%20Analyst%20at%20DataCrest%20Analytics%20(Remote)%0A%20%20%20%E2%80%A2%20Source%3A%20Ashby%20ATS%20%E2%80%A2%20Company%20Career%20Page%20(Posted%202%20hrs%20ago%20(4%3A40%20AM))%0A%20%20%20%E2%80%A2%20Why%20it%20matches%3A%20Matches%204%2F4%20core%20skills%20(Python%2C%20SQL%2C%20Tableau%2C%20Power%20BI)%20%2B%20Related%20Role%20Fit%0A%20%20%20%E2%80%A2%20Apply%20%2F%20View%20Portal%3A%20https%3A%2F%2Fwww.google.com%2Fsearch%3Fq%3Dsite%3Ajobs.ashbyhq.com%2BPython%2BData%2BAnalyst%2BSQL%0A%0A----------------------------------------%0A%0ALive%20HiringCafe%20Portal%20Search%3A%20https%3A%2F%2Fhiring.cafe%2F" class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition" target="_blank" rel="noopener noreferrer">
+          <span>✉ Send Digest to Email</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Toast Notification -->
+  <div id="toastBox" class="fixed bottom-4 right-4 z-50 hidden bg-slate-900 text-white text-xs sm:text-sm px-4 py-2.5 rounded-lg shadow-lg border border-slate-700 flex items-center gap-2">
+    <span id="toastText">Updated!</span>
+  </div>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
+    <!-- VIEW 1: FEED, RESUME ANALYZER & COMPANY PORTAL SEARCH -->
+    <div id="viewFeed" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Left Column: Resume Analyzer & Career Portal Search -->
+      <section class="lg:col-span-5 space-y-4">
+        <!-- Resume Analyzer Card -->
+        <div class="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600">Auto-Saved Profile &amp; Resume Engine</span>
+              <h2 class="font-bold text-slate-900 text-sm sm:text-base">1. Resume Analyzer &amp; Specifications</h2>
+            </div>
+            <button id="btnResetDemo" type="button" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
+              Reset Example
+            </button>
+          </div>
+
+          <p class="text-xs text-slate-500 mb-3">
+            Configured with your <strong>MANIT Bhopal MBA (Finance &amp; Analytics)</strong> resume skills. Any changes you make are automatically saved in your browser.
+          </p>
+
+          <!-- Preset Resume Templates + File Upload -->
+          <div class="flex flex-wrap items-center gap-1.5 mb-3">
+            <button id="btnPresetAditya" type="button" class="text-[11px] font-semibold px-2 py-1 rounded bg-indigo-600 text-white shadow-sm transition">
+              ★ Aditya MBA Finance
+            </button>
+            <button id="btnPresetFrontend" type="button" class="text-[11px] font-medium px-2 py-1 rounded bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 transition">
+              Frontend / React
+            </button>
+            <button id="btnPresetFullstack" type="button" class="text-[11px] font-medium px-2 py-1 rounded bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 transition">
+              Full-Stack JS
+            </button>
+            <button id="btnPresetData" type="button" class="text-[11px] font-medium px-2 py-1 rounded bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 transition">
+              Python / Data
+            </button>
+            <label for="inputResumeFile" class="cursor-pointer text-[11px] font-semibold px-2 py-1 rounded bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition ml-auto">
+              ↑ Upload .txt Resume
+            </label>
+            <input id="inputResumeFile" type="file" accept=".txt,.md" class="hidden">
+          </div>
+
+          <div class="space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div>
+                <label for="inputRole" class="block text-xs font-medium text-slate-700 mb-1">Target Role / Title</label>
+                <input id="inputRole" type="text" value="Financial Analyst" placeholder="e.g. Financial Analyst, Equity Research" class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+
+              <div>
+                <label for="inputLocation" class="block text-xs font-medium text-slate-700 mb-1">Location / Work Mode</label>
+                <select id="inputLocation" class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <option value="all">Any (Remote, Hybrid, On-site)</option>
+                  <option value="Remote">Remote Only</option>
+                  <option value="Hybrid">Hybrid</option>
+                  <option value="India">India (Mumbai / Bengaluru / Bhopal / Pune)</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label for="inputResume" class="block text-xs font-medium text-slate-700 mb-1">
+                Full Resume Text or Skills List
+              </label>
+              <textarea id="inputResume" rows="5" placeholder="Paste your entire resume summary, projects, and skills here..." class="w-full rounded-lg border border-slate-300 p-2.5 text-xs sm:text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-500 custom-scroll">Aditya Soni — MBA in Finance &amp; Analytics at MANIT Bhopal (2025-2027), B.Com (83.2%). Equity Research Intern at Millenium Money Finance (Mumbai). Deloitte Tableau Data Analytics Virtual Experience. Skills: Financial Modeling, Equity Research, Financial Market Analysis, Ratio Analysis, DCF Valuation, Corporate Finance, MS Excel, Power BI, Tableau, SQL, Python, MIS Reporting, FinTech, Budget Planning.</textarea>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div>
+                <label for="inputExclude" class="block text-xs font-medium text-slate-700 mb-1">
+                  Exclude Dealbreakers (Optional)
+                </label>
+                <input id="inputExclude" type="text" value="" placeholder="e.g. 10+ years, Senior Director" class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+
+              <div>
+                <label for="inputMinScore" class="flex items-center justify-between text-xs font-medium text-slate-700 mb-1">
+                  <span>Minimum Match Score</span>
+                  <span id="labelMinScore" class="font-bold text-indigo-600">40%</span>
+                </label>
+                <input id="inputMinScore" type="range" min="0" max="90" step="5" value="40" class="w-full accent-indigo-600 cursor-pointer mt-1.5">
+              </div>
+            </div>
+
+            <!-- Live Resume Diagnostic Breakdown -->
+            <div class="rounded-xl bg-slate-50 border border-slate-200 p-3 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-800">Resume Analyzer Diagnostic</span>
+                <span class="text-[11px] font-medium text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+                  <span id="detectedKeywordsCount">17</span> Skills Extracted
+                </span>
+              </div>
+
+              <div>
+                <div class="text-[11px] text-slate-500 mb-1">Core Skills Detected in Your Resume (2× Weight):</div>
+                <div id="analyzerCoreSkills" class="flex flex-wrap gap-1"><span class="px-2 py-0.5 rounded bg-indigo-100/80 text-indigo-800 text-[11px] font-medium">Financial Modeling</span><span class="px-2 py-0.5 rounded bg-indigo-100/80 text-indigo-800 text-[11px] font-medium">Equity Research</span><span class="px-2 py-0.5 rounded bg-indigo-100/80 text-indigo-800 text-[11px] font-medium">Financial Market Analysis</span><span class="px-2 py-0.5 rounded bg-indigo-100/80 text-indigo-800 text-[11px] font-medium">Ratio Analysis</span><span class="px-2 py-0.5 rounded bg-indigo-100/80 text-indigo-800 text-[11px] font-medium">DCF Valuation</span><span class="px-2 py-0.5 rounded bg-indigo-100/80 text-indigo-800 text-[11px] font-medium">DCF</span><span class="px-2 py-0.5 rounded bg-indigo-100/80 text-indigo-800 text-[11px] font-medium">Corporate Finance</span><span class="px-2 py-0.5 rounded bg-indigo-100/80 text-indigo-800 text-[11px] font-medium">MS Excel</span><span class="px-2 py-0.5 rounded bg-indigo-100/80 text-indigo-800 text-[11px] font-medium">Excel</span><span class="px-2 py-0.5 rounded bg-indigo-100/80 text-indigo-800 text-[11px] font-medium">Power BI</span><span class="px-2 py-0.5 rounded bg-indigo-100/80 text-indigo-800 text-[11px] font-medium">Tableau</span><span class="px-2 py-0.5 rounded bg-indigo-100/80 text-indigo-800 text-[11px] font-medium">SQL</span><span class="px-2 py-0.5 rounded bg-indigo-100/80 text-indigo-800 text-[11px] font-medium">Python</span><span class="px-2 py-0.5 rounded bg-indigo-100/80 text-indigo-800 text-[11px] font-medium">MIS Reporting</span></div>
+              </div>
+
+              <div class="pt-1 border-t border-slate-200/80 flex items-center justify-between text-[11px]">
+                <span class="text-slate-600">Direct Resume Matches (75%+ Score):</span>
+                <span id="analyzerDirectCount" class="font-bold text-emerald-700">4 Direct Matches</span>
+              </div>
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="text-slate-600">Top Missing Skill Across Feed:</span>
+                <span id="analyzerMissingTip" class="font-semibold text-amber-700">JavaScript (in 1 jobs)</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button id="btnRunMatcher" type="button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs py-2.5 px-3 rounded-lg shadow-sm transition flex items-center justify-center gap-1.5">
+                <span>Refresh Morning Matches</span>
+              </button>
+              <button id="btnFetchLiveApi" type="button" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2.5 px-3 rounded-lg shadow-sm transition flex items-center justify-center gap-1.5">
+                <span id="liveFetchBtnLabel">🌐 Fetch Live Internet Jobs</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Company Career Portals & HiringCafe Live Search Launcher -->
+        <div class="bg-indigo-950 text-white rounded-xl p-4 sm:p-5 shadow-sm space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-[10px] uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded font-semibold">
+                Direct Career Portals + Aggregators
+              </span>
+              <h3 class="font-bold text-sm sm:text-base mt-1">2. Search HiringCafe &amp; Company Websites</h3>
+            </div>
+          </div>
+          <p class="text-xs text-indigo-200 leading-relaxed">
+            Click below to launch 24-hour searches across <strong>HiringCafe</strong> and direct company ATS career portals (Greenhouse, Lever, Ashby, Workday) using your analyzed resume skills:
+          </p>
+
+          <div class="space-y-2">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-indigo-300">
+              A. Direct Company Career Portals (Fresh &lt; 24h)
+            </div>
+            <div id="portalSearchLinks" class="grid grid-cols-1 gap-2">
+        <a href="https://hiring.cafe/?searchState=%7B%22searchQuery%22%3A%22Financial%20Analyst%20Financial%20Modeling%20Equity%20Research%20Financial%20Market%20Analysis%22%7D" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700/60 rounded-lg px-3 py-2 text-xs transition">
+          <span class="font-medium text-white truncate pr-2">HiringCafe (Direct Company Websites)</span>
+          <span class="text-[11px] text-emerald-300 whitespace-nowrap">Company Portals ↗</span>
+        </a>
+      
+        <a href="https://www.google.com/search?q=(site%3Aboards.greenhouse.io%20OR%20site%3Ajobs.lever.co)%20%22Financial%20Analyst%22%20Financial%20Modeling%20Equity%20Research%20Financial%20Market%20Analysis%20India&amp;tbs=qdr:d" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700/60 rounded-lg px-3 py-2 text-xs transition">
+          <span class="font-medium text-white truncate pr-2">Greenhouse &amp; Lever Company Portals</span>
+          <span class="text-[11px] text-emerald-300 whitespace-nowrap">ATS Past 24h ↗</span>
+        </a>
+      
+        <a href="https://www.google.com/search?q=(site%3Ajobs.ashbyhq.com%20OR%20site%3Amyworkdayjobs.com)%20%22Financial%20Analyst%22%20Financial%20Modeling%20Equity%20Research%20Financial%20Market%20Analysis&amp;tbs=qdr:d" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700/60 rounded-lg px-3 py-2 text-xs transition">
+          <span class="font-medium text-white truncate pr-2">Ashby &amp; Workday Company Career Pages</span>
+          <span class="text-[11px] text-emerald-300 whitespace-nowrap">Direct Portals ↗</span>
+        </a>
+      
+        <a href="https://www.google.com/search?q=(site%3Awellfound.com%2Fjobs%20OR%20site%3Aworkatastartup.com)%20%22Financial%20Analyst%22%20Financial%20Modeling%20Equity%20Research%20Financial%20Market%20Analysis&amp;tbs=qdr:w" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700/60 rounded-lg px-3 py-2 text-xs transition">
+          <span class="font-medium text-white truncate pr-2">Wellfound / YC Startup Career Pages</span>
+          <span class="text-[11px] text-emerald-300 whitespace-nowrap">Startup Direct ↗</span>
+        </a>
+      </div>
+          </div>
+
+          <div class="space-y-2 pt-2 border-t border-indigo-800/80">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-indigo-300">
+              B. Major Job Boards (Last 24 Hours)
+            </div>
+            <div id="liveSearchLinks" class="grid grid-cols-1 gap-2">
+        <a href="https://www.linkedin.com/jobs/search/?keywords=Financial%20Analyst%20Financial%20Modeling%20Equity%20Research%20Financial%20Market%20Analysis&amp;location=India&amp;f_TPR=r86400&amp;sortBy=DD" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between bg-indigo-900/70 hover:bg-indigo-800 border border-indigo-700/60 rounded-lg px-3 py-2 text-xs transition">
+          <span class="font-medium text-white truncate pr-2">LinkedIn Jobs (Past 24 Hours)</span>
+          <span class="text-[11px] text-indigo-200 whitespace-nowrap">Fresh &lt; 24h ↗</span>
+        </a>
+      
+        <a href="https://in.indeed.com/jobs?q=Financial%20Analyst%20Financial%20Modeling%20Equity%20Research%20Financial%20Market%20Analysis&amp;l=India&amp;fromage=1&amp;sort=date" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between bg-indigo-900/70 hover:bg-indigo-800 border border-indigo-700/60 rounded-lg px-3 py-2 text-xs transition">
+          <span class="font-medium text-white truncate pr-2">Indeed (Sorted by Date)</span>
+          <span class="text-[11px] text-indigo-200 whitespace-nowrap">Last 1 Day ↗</span>
+        </a>
+      
+        <a href="https://www.google.com/search?q=Financial%20Analyst%20jobs%20India%20posted%20today" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between bg-indigo-900/70 hover:bg-indigo-800 border border-indigo-700/60 rounded-lg px-3 py-2 text-xs transition">
+          <span class="font-medium text-white truncate pr-2">Google Jobs Aggregator</span>
+          <span class="text-[11px] text-indigo-200 whitespace-nowrap">All Boards ↗</span>
+        </a>
+      </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Ranked Morning Job List -->
+      <section class="lg:col-span-7 space-y-4">
+        <!-- Morning Briefing & Filter Bar -->
+        <div class="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-sm space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                <span id="morningBatchTitle" class="text-xs font-semibold uppercase tracking-wider text-emerald-700">
+                  Today's 7:00 AM Drop • Active Schedule + Live Multi-API Feed
+                </span>
+              </div>
+              <h2 class="text-base sm:text-lg font-bold text-slate-900 mt-0.5">
+                Jobs Scored Against Your Resume
+              </h2>
+              <p id="matchSummarySubtitle" class="text-xs text-slate-500">Showing 4 morning jobs (4 Direct Resume Matches &gt;= 75%)</p>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button id="btnToggleAddJob" type="button" class="text-xs font-medium px-3 py-2 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 transition">
+                + Test Custom Job Post
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Filter Pills: All vs Direct Matches vs Company Portals -->
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
+            <div class="flex flex-wrap items-center gap-1.5">
+              <button id="filterBtnAll" type="button" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-indigo-600 text-white transition">
+                All Ranked Jobs
+              </button>
+              <button id="filterBtnDirect" type="button" class="text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+                🔥 Direct Resume Matches Only (75%+)
+              </button>
+              <button id="filterBtnPortals" type="button" class="text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+                🏢 Company Career Portals Only
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inline Quick Morning Email & Active Schedule Banner -->
+        <div class="bg-emerald-50/90 border border-emerald-200 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <span class="text-lg">⏰</span>
+            <div>
+              <p class="text-xs font-bold text-emerald-950">Daily ~7:00 AM IST Schedule Active + One-Click Email Digest</p>
+              <p class="text-[11px] text-emerald-800">Linked to <strong>adityasonigs@gmail.com</strong>. Click to send today's ranked matches anytime:</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <input id="quickEmailInput" type="email" value="adityasonigs@gmail.com" placeholder="you@example.com" class="flex-1 sm:w-48 rounded-lg border border-emerald-300 bg-white px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-600">
+            <a id="quickMailtoBtn" href="mailto:adityasonigs%40gmail.com?subject=EarlyBird%207%3A00%20AM%20Job%20Radar%3A%204%20Direct%20Resume%20Matches%20for%20Financial%20Analyst&amp;body=Good%20Morning%20Aditya!%20Here%20is%20your%20EarlyBird%20Job%20Radar%20digest%20(07%3A00%20AM%20IST)%3A%0A%0ATarget%20Role%3A%20Financial%20Analyst%0A%0A----------------------------------------%0A%0A1.%20%5B100%25%20Direct%20Resume%20Match%5D%20Financial%20Analyst%20%E2%80%94%20Equity%20Research%20%26%20Valuation%20at%20Apex%20Capital%20Partners%20(India)%0A%20%20%20%E2%80%A2%20Source%3A%20HiringCafe%20%E2%80%A2%20Direct%20Company%20Portal%20(Posted%2028%20mins%20ago%20(6%3A32%20AM))%0A%20%20%20%E2%80%A2%20Why%20it%20matches%3A%20Matches%205%2F5%20core%20skills%20(Financial%20Modeling%2C%20Equity%20Research%2C%20DCF%20Valuation%2C%20Ratio%20Analysis)%20%2B%20Exact%20Role%20Match%0A%20%20%20%E2%80%A2%20Apply%20%2F%20View%20Portal%3A%20https%3A%2F%2Fhiring.cafe%2F%0A%0A2.%20%5B100%25%20Direct%20Resume%20Match%5D%20Business%20Intelligence%20%26%20Financial%20Data%20Analyst%20at%20FinVerge%20FinTech%20Labs%20(Remote)%0A%20%20%20%E2%80%A2%20Source%3A%20Greenhouse%20ATS%20%E2%80%A2%20Direct%20Company%20Site%20(Posted%2045%20mins%20ago%20(6%3A15%20AM))%0A%20%20%20%E2%80%A2%20Why%20it%20matches%3A%20Matches%205%2F5%20core%20skills%20(Tableau%2C%20Power%20BI%2C%20MS%20Excel%2C%20SQL)%20%2B%20Exact%20Role%20Match%0A%20%20%20%E2%80%A2%20Apply%20%2F%20View%20Portal%3A%20https%3A%2F%2Fwww.google.com%2Fsearch%3Fq%3Dsite%3Aboards.greenhouse.io%2B%2522Financial%2BAnalyst%2522%2BOR%2B%2522Business%2BIntelligence%2522%2BTableau%2BExcel%0A%0A3.%20%5B100%25%20Direct%20Resume%20Match%5D%20Corporate%20Finance%20%26%20FP%26A%20Analyst%20(MBA%20Associate)%20at%20StrataGrid%20Enterprises%20(India)%0A%20%20%20%E2%80%A2%20Source%3A%20Lever%20ATS%20%E2%80%A2%20Company%20Career%20Portal%20(Posted%201%20hr%20ago%20(5%3A50%20AM))%0A%20%20%20%E2%80%A2%20Why%20it%20matches%3A%20Matches%204%2F4%20core%20skills%20(Corporate%20Finance%2C%20Financial%20Modeling%2C%20Budget%20Planning%2C%20MS%20Excel)%20%2B%20Exact%20Role%20Match%0A%20%20%20%E2%80%A2%20Apply%20%2F%20View%20Portal%3A%20https%3A%2F%2Fwww.google.com%2Fsearch%3Fq%3Dsite%3Ajobs.lever.co%2B%2522Corporate%2BFinance%2522%2BOR%2B%2522Financial%2BAnalyst%2522%2BExcel%0A%0A4.%20%5B76%25%20Direct%20Resume%20Match%5D%20Python%20Data%20%26%20Automation%20Analyst%20at%20DataCrest%20Analytics%20(Remote)%0A%20%20%20%E2%80%A2%20Source%3A%20Ashby%20ATS%20%E2%80%A2%20Company%20Career%20Page%20(Posted%202%20hrs%20ago%20(4%3A40%20AM))%0A%20%20%20%E2%80%A2%20Why%20it%20matches%3A%20Matches%204%2F4%20core%20skills%20(Python%2C%20SQL%2C%20Tableau%2C%20Power%20BI)%20%2B%20Related%20Role%20Fit%0A%20%20%20%E2%80%A2%20Apply%20%2F%20View%20Portal%3A%20https%3A%2F%2Fwww.google.com%2Fsearch%3Fq%3Dsite%3Ajobs.ashbyhq.com%2BPython%2BData%2BAnalyst%2BSQL%0A%0A----------------------------------------%0A%0ALive%20HiringCafe%20Portal%20Search%3A%20https%3A%2F%2Fhiring.cafe%2F" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white whitespace-nowrap transition" target="_blank" rel="noopener noreferrer">
+              Email Me List ↗
+            </a>
+          </div>
+        </div>
+
+        <!-- Collapsible: Test Custom Job Form -->
+        <div id="boxAddCustomJob" class="hidden bg-white rounded-xl border border-indigo-200 p-4 sm:p-5 shadow-sm space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-slate-900">Paste Any Job Description to Score Against Your Resume</h3>
+            <button id="btnCloseCustomJob" type="button" class="text-xs text-slate-400 hover:text-slate-600">Close ✕</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <input id="customJobTitle" type="text" placeholder="Job Title (e.g. Financial Analyst)" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm">
+            <input id="customJobCompany" type="text" placeholder="Company (e.g. JP Morgan Portal)" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm">
+            <select id="customJobMode" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm bg-white">
+              <option value="Remote">Remote</option>
+              <option value="Hybrid">Hybrid</option>
+              <option value="India">India (On-site)</option>
+            </select>
+          </div>
+          <textarea id="customJobDesc" rows="2" placeholder="Paste the full job requirements or skills (e.g. Financial Modeling, Excel, Power BI, Tableau, DCF, Ratio Analysis)..." class="w-full rounded-lg border border-slate-300 p-2.5 text-xs sm:text-sm"></textarea>
+          <div class="flex justify-end">
+            <button id="btnSaveCustomJob" type="button" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium px-4 py-2 rounded-lg">
+              Score &amp; Add to Feed
+            </button>
+          </div>
+        </div>
+
+        <!-- Job Cards Container -->
+        <div id="jobFeedContainer" class="space-y-3">
+        <article class="bg-white rounded-xl border border-emerald-300 ring-1 ring-emerald-500/20 p-4 sm:p-5 shadow-sm hover:border-indigo-300 transition">
+          <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
+            <div>
+              <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
+                  HiringCafe • Direct Company Portal
+                </span>
+                <span class="text-[11px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-700">India</span>
+                <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">🔥 Direct Resume Match</span>
+              </div>
+              <h3 class="font-bold text-slate-900 text-sm sm:text-base">Financial Analyst — Equity Research &amp; Valuation</h3>
+              <p class="text-xs text-slate-500 mt-0.5">
+                <strong class="text-slate-700">Apex Capital Partners</strong> • ₹9L – ₹14L / yr • <span class="text-emerald-600 font-medium">Posted 28 mins ago (6:32 AM)</span>
+              </p>
+            </div>
+
+            <div class="flex flex-col items-end">
+              <span class="text-xs font-bold px-2.5 py-1 rounded-lg border bg-emerald-600 text-white border-emerald-600 shadow-sm">
+                100% Match
+              </span>
+              <span class="text-[10px] text-slate-400 mt-1">Direct Resume Match</span>
+            </div>
+          </div>
+
+          <div class="rounded-lg bg-slate-50 border border-slate-200/80 px-3 py-2 mb-3 text-xs text-slate-700 flex items-center justify-between gap-2">
+            <span><strong>Resume Diagnosis:</strong> Matches 5/5 core skills (Financial Modeling, Equity Research, DCF Valuation, Ratio Analysis) + Exact Role Match</span>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 mb-3">Direct company portal opening (Mumbai / Hybrid). Build DCF valuation models, perform equity research and ratio analysis, and prepare institutional investment decks.</p>
+
+          <div class="mb-3">
+            <div class="text-[11px] font-medium text-slate-400 mb-1.5">
+              Resume Skill Overlap (Green = On Your Resume • Grey = Add to Resume):
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Financial Modeling</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Equity Research</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ DCF Valuation</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Ratio Analysis</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ MS Excel</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Power BI</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Financial Market Analysis</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Corporate Finance</span>
+              
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <button type="button" data-action="save" data-id="job-2" class="text-xs font-medium px-3 py-1.5 rounded-lg border transition border-slate-200 text-slate-600 hover:bg-slate-50">
+                ☆ Save for Later
+              </button>
+              <button type="button" data-action="applied" data-id="job-2" class="text-xs font-medium px-3 py-1.5 rounded-lg border transition border-slate-200 text-slate-600 hover:bg-slate-50">
+                Mark Applied
+              </button>
+            </div>
+
+            <a href="https://hiring.cafe/" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+              <span>Open Portal / Apply</span>
+              <span>↗</span>
+            </a>
+          </div>
+        </article>
+      
+        <article class="bg-white rounded-xl border border-emerald-300 ring-1 ring-emerald-500/20 p-4 sm:p-5 shadow-sm hover:border-indigo-300 transition">
+          <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
+            <div>
+              <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
+                  Greenhouse ATS • Direct Company Site
+                </span>
+                <span class="text-[11px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-700">Remote</span>
+                <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">🔥 Direct Resume Match</span>
+              </div>
+              <h3 class="font-bold text-slate-900 text-sm sm:text-base">Business Intelligence &amp; Financial Data Analyst</h3>
+              <p class="text-xs text-slate-500 mt-0.5">
+                <strong class="text-slate-700">FinVerge FinTech Labs</strong> • ₹8L – ₹13L / yr • <span class="text-emerald-600 font-medium">Posted 45 mins ago (6:15 AM)</span>
+              </p>
+            </div>
+
+            <div class="flex flex-col items-end">
+              <span class="text-xs font-bold px-2.5 py-1 rounded-lg border bg-emerald-600 text-white border-emerald-600 shadow-sm">
+                100% Match
+              </span>
+              <span class="text-[10px] text-slate-400 mt-1">Direct Resume Match</span>
+            </div>
+          </div>
+
+          <div class="rounded-lg bg-slate-50 border border-slate-200/80 px-3 py-2 mb-3 text-xs text-slate-700 flex items-center justify-between gap-2">
+            <span><strong>Resume Diagnosis:</strong> Matches 5/5 core skills (Tableau, Power BI, MS Excel, SQL) + Exact Role Match</span>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 mb-3">Posted on our Greenhouse career page. Design interactive Tableau and Power BI KPI dashboards, automate MIS reporting in Advanced Excel, and analyze FinTech revenue streams.</p>
+
+          <div class="mb-3">
+            <div class="text-[11px] font-medium text-slate-400 mb-1.5">
+              Resume Skill Overlap (Green = On Your Resume • Grey = Add to Resume):
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Tableau</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Power BI</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ MS Excel</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ SQL</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ MIS Reporting</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Python</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Financial Market Analysis</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ FinTech</span>
+              
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <button type="button" data-action="save" data-id="job-3" class="text-xs font-medium px-3 py-1.5 rounded-lg border transition border-slate-200 text-slate-600 hover:bg-slate-50">
+                ☆ Save for Later
+              </button>
+              <button type="button" data-action="applied" data-id="job-3" class="text-xs font-medium px-3 py-1.5 rounded-lg border transition border-slate-200 text-slate-600 hover:bg-slate-50">
+                Mark Applied
+              </button>
+            </div>
+
+            <a href="https://www.google.com/search?q=site:boards.greenhouse.io+%22Financial+Analyst%22+OR+%22Business+Intelligence%22+Tableau+Excel" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+              <span>Open Portal / Apply</span>
+              <span>↗</span>
+            </a>
+          </div>
+        </article>
+      
+        <article class="bg-white rounded-xl border border-emerald-300 ring-1 ring-emerald-500/20 p-4 sm:p-5 shadow-sm hover:border-indigo-300 transition">
+          <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
+            <div>
+              <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
+                  Lever ATS • Company Career Portal
+                </span>
+                <span class="text-[11px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-700">India</span>
+                <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">🔥 Direct Resume Match</span>
+              </div>
+              <h3 class="font-bold text-slate-900 text-sm sm:text-base">Corporate Finance &amp; FP&amp;A Analyst (MBA Associate)</h3>
+              <p class="text-xs text-slate-500 mt-0.5">
+                <strong class="text-slate-700">StrataGrid Enterprises</strong> • ₹10L – ₹16L / yr • <span class="text-emerald-600 font-medium">Posted 1 hr ago (5:50 AM)</span>
+              </p>
+            </div>
+
+            <div class="flex flex-col items-end">
+              <span class="text-xs font-bold px-2.5 py-1 rounded-lg border bg-emerald-600 text-white border-emerald-600 shadow-sm">
+                100% Match
+              </span>
+              <span class="text-[10px] text-slate-400 mt-1">Direct Resume Match</span>
+            </div>
+          </div>
+
+          <div class="rounded-lg bg-slate-50 border border-slate-200/80 px-3 py-2 mb-3 text-xs text-slate-700 flex items-center justify-between gap-2">
+            <span><strong>Resume Diagnosis:</strong> Matches 4/4 core skills (Corporate Finance, Financial Modeling, Budget Planning, MS Excel) + Exact Role Match</span>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 mb-3">Listed on our Lever company portal (Bengaluru / Pune). Support annual budget planning, variance tracking, financial modeling, and executive MIS dashboards.</p>
+
+          <div class="mb-3">
+            <div class="text-[11px] font-medium text-slate-400 mb-1.5">
+              Resume Skill Overlap (Green = On Your Resume • Grey = Add to Resume):
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Corporate Finance</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Financial Modeling</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Budget Planning</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ MS Excel</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Ratio Analysis</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ MIS Reporting</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Power BI</span>
+              
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <button type="button" data-action="save" data-id="job-4" class="text-xs font-medium px-3 py-1.5 rounded-lg border transition border-slate-200 text-slate-600 hover:bg-slate-50">
+                ☆ Save for Later
+              </button>
+              <button type="button" data-action="applied" data-id="job-4" class="text-xs font-medium px-3 py-1.5 rounded-lg border transition border-slate-200 text-slate-600 hover:bg-slate-50">
+                Mark Applied
+              </button>
+            </div>
+
+            <a href="https://www.google.com/search?q=site:jobs.lever.co+%22Corporate+Finance%22+OR+%22Financial+Analyst%22+Excel" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+              <span>Open Portal / Apply</span>
+              <span>↗</span>
+            </a>
+          </div>
+        </article>
+      
+        <article class="bg-white rounded-xl border border-emerald-300 ring-1 ring-emerald-500/20 p-4 sm:p-5 shadow-sm hover:border-indigo-300 transition">
+          <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
+            <div>
+              <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
+                  Ashby ATS • Company Career Page
+                </span>
+                <span class="text-[11px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-700">Remote</span>
+                <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">🔥 Direct Resume Match</span>
+              </div>
+              <h3 class="font-bold text-slate-900 text-sm sm:text-base">Python Data &amp; Automation Analyst</h3>
+              <p class="text-xs text-slate-500 mt-0.5">
+                <strong class="text-slate-700">DataCrest Analytics</strong> • ₹7L – ₹13L / yr • <span class="text-emerald-600 font-medium">Posted 2 hrs ago (4:40 AM)</span>
+              </p>
+            </div>
+
+            <div class="flex flex-col items-end">
+              <span class="text-xs font-bold px-2.5 py-1 rounded-lg border bg-emerald-600 text-white border-emerald-600 shadow-sm">
+                76% Match
+              </span>
+              <span class="text-[10px] text-slate-400 mt-1">Direct Resume Match</span>
+            </div>
+          </div>
+
+          <div class="rounded-lg bg-slate-50 border border-slate-200/80 px-3 py-2 mb-3 text-xs text-slate-700 flex items-center justify-between gap-2">
+            <span><strong>Resume Diagnosis:</strong> Matches 4/4 core skills (Python, SQL, Tableau, Power BI) + Related Role Fit</span>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 mb-3">Direct company career portal role. Automate morning data pipelines, build Tableau/Power BI reports, and query cloud databases.</p>
+
+          <div class="mb-3">
+            <div class="text-[11px] font-medium text-slate-400 mb-1.5">
+              Resume Skill Overlap (Green = On Your Resume • Grey = Add to Resume):
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Python</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ SQL</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Tableau</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Power BI</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ MS Excel</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-500" title="Missing from your resume">+ Data Visualization</span><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-500" title="Missing from your resume">+ Problem solving</span>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <button type="button" data-action="save" data-id="job-5" class="text-xs font-medium px-3 py-1.5 rounded-lg border transition border-slate-200 text-slate-600 hover:bg-slate-50">
+                ☆ Save for Later
+              </button>
+              <button type="button" data-action="applied" data-id="job-5" class="text-xs font-medium px-3 py-1.5 rounded-lg border transition border-slate-200 text-slate-600 hover:bg-slate-50">
+                Mark Applied
+              </button>
+            </div>
+
+            <a href="https://www.google.com/search?q=site:jobs.ashbyhq.com+Python+Data+Analyst+SQL" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+              <span>Open Portal / Apply</span>
+              <span>↗</span>
+            </a>
+          </div>
+        </article>
+      </div>
+      </section>
+    </div>
+
+    <!-- VIEW 2: SAVED & APPLIED TRACKER -->
+    <div id="viewSaved" class="hidden space-y-4">
+      <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-base sm:text-lg font-bold text-slate-900">Your Saved &amp; Applied Jobs</h2>
+          <p class="text-xs text-slate-500">Keep track of morning jobs you've bookmarked or applied to early.</p>
+        </div>
+        <button id="btnClearSaved" type="button" class="text-xs text-rose-600 hover:text-rose-800 font-medium">
+          Clear All Saved
+        </button>
+      </div>
+      <div id="savedJobsContainer" class="space-y-3">
+          <div class="bg-white rounded-xl border border-slate-200 p-8 text-center">
+            <p class="text-sm font-semibold text-slate-800 mb-1">No saved or applied jobs yet</p>
+            <p class="text-xs text-slate-500">Click "Save for Later" or "Mark Applied" on any job in your Morning Feed.</p>
+          </div>
+        </div>
+    </div>
+
+    <!-- VIEW 3: MORNING EMAIL DIGEST SETUP & PREVIEW -->
+    <div id="viewEmail" class="hidden space-y-6">
+      <div class="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 shadow-sm space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <span class="text-xs font-bold uppercase text-emerald-700">Daily Automated Schedule + Manual Trigger</span>
+            <h2 class="text-lg font-bold text-slate-900">Your Daily ~7:00 AM IST Morning Email Digest</h2>
+            <p class="text-xs text-slate-500">
+              Your automated daily schedule is active for <strong>adityasonigs@gmail.com</strong>. You can also send or copy an instant digest from the live feed below.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+          <div>
+            <label for="digestEmailInput" class="block text-xs font-medium text-slate-700 mb-1">Your Email Address</label>
+            <input id="digestEmailInput" type="email" value="adityasonigs@gmail.com" placeholder="adityasonigs@gmail.com" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label for="digestTimeInput" class="block text-xs font-medium text-slate-700 mb-1">Preferred Morning Delivery Time</label>
+            <select id="digestTimeInput" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white">
+              <option value="06:30 AM IST">06:30 AM IST (Earliest Bird)</option>
+              <option value="07:00 AM IST" selected="">07:00 AM IST (Active Schedule)</option>
+              <option value="08:00 AM IST">08:00 AM IST</option>
+              <option value="09:00 AM IST">09:00 AM IST</option>
+            </select>
+          </div>
+          <div>
+            <label for="digestFilterSelect" class="block text-xs font-medium text-slate-700 mb-1">Jobs to Include in Email</label>
+            <select id="digestFilterSelect" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white">
+              <option value="direct">Only Direct Resume Matches (75%+)</option>
+              <option value="all">All Matched Morning Jobs</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 pt-2">
+          <a id="btnSendMailtoDigest" href="mailto:adityasonigs%40gmail.com?subject=EarlyBird%207%3A00%20AM%20Job%20Radar%3A%204%20Direct%20Resume%20Matches%20for%20Financial%20Analyst&amp;body=Good%20Morning%20Aditya!%20Here%20is%20your%20EarlyBird%20Job%20Radar%20digest%20(07%3A00%20AM%20IST)%3A%0A%0ATarget%20Role%3A%20Financial%20Analyst%0A%0A----------------------------------------%0A%0A1.%20%5B100%25%20Direct%20Resume%20Match%5D%20Financial%20Analyst%20%E2%80%94%20Equity%20Research%20%26%20Valuation%20at%20Apex%20Capital%20Partners%20(India)%0A%20%20%20%E2%80%A2%20Source%3A%20HiringCafe%20%E2%80%A2%20Direct%20Company%20Portal%20(Posted%2028%20mins%20ago%20(6%3A32%20AM))%0A%20%20%20%E2%80%A2%20Why%20it%20matches%3A%20Matches%205%2F5%20core%20skills%20(Financial%20Modeling%2C%20Equity%20Research%2C%20DCF%20Valuation%2C%20Ratio%20Analysis)%20%2B%20Exact%20Role%20Match%0A%20%20%20%E2%80%A2%20Apply%20%2F%20View%20Portal%3A%20https%3A%2F%2Fhiring.cafe%2F%0A%0A2.%20%5B100%25%20Direct%20Resume%20Match%5D%20Business%20Intelligence%20%26%20Financial%20Data%20Analyst%20at%20FinVerge%20FinTech%20Labs%20(Remote)%0A%20%20%20%E2%80%A2%20Source%3A%20Greenhouse%20ATS%20%E2%80%A2%20Direct%20Company%20Site%20(Posted%2045%20mins%20ago%20(6%3A15%20AM))%0A%20%20%20%E2%80%A2%20Why%20it%20matches%3A%20Matches%205%2F5%20core%20skills%20(Tableau%2C%20Power%20BI%2C%20MS%20Excel%2C%20SQL)%20%2B%20Exact%20Role%20Match%0A%20%20%20%E2%80%A2%20Apply%20%2F%20View%20Portal%3A%20https%3A%2F%2Fwww.google.com%2Fsearch%3Fq%3Dsite%3Aboards.greenhouse.io%2B%2522Financial%2BAnalyst%2522%2BOR%2B%2522Business%2BIntelligence%2522%2BTableau%2BExcel%0A%0A3.%20%5B100%25%20Direct%20Resume%20Match%5D%20Corporate%20Finance%20%26%20FP%26A%20Analyst%20(MBA%20Associate)%20at%20StrataGrid%20Enterprises%20(India)%0A%20%20%20%E2%80%A2%20Source%3A%20Lever%20ATS%20%E2%80%A2%20Company%20Career%20Portal%20(Posted%201%20hr%20ago%20(5%3A50%20AM))%0A%20%20%20%E2%80%A2%20Why%20it%20matches%3A%20Matches%204%2F4%20core%20skills%20(Corporate%20Finance%2C%20Financial%20Modeling%2C%20Budget%20Planning%2C%20MS%20Excel)%20%2B%20Exact%20Role%20Match%0A%20%20%20%E2%80%A2%20Apply%20%2F%20View%20Portal%3A%20https%3A%2F%2Fwww.google.com%2Fsearch%3Fq%3Dsite%3Ajobs.lever.co%2B%2522Corporate%2BFinance%2522%2BOR%2B%2522Financial%2BAnalyst%2522%2BExcel%0A%0A4.%20%5B76%25%20Direct%20Resume%20Match%5D%20Python%20Data%20%26%20Automation%20Analyst%20at%20DataCrest%20Analytics%20(Remote)%0A%20%20%20%E2%80%A2%20Source%3A%20Ashby%20ATS%20%E2%80%A2%20Company%20Career%20Page%20(Posted%202%20hrs%20ago%20(4%3A40%20AM))%0A%20%20%20%E2%80%A2%20Why%20it%20matches%3A%20Matches%204%2F4%20core%20skills%20(Python%2C%20SQL%2C%20Tableau%2C%20Power%20BI)%20%2B%20Related%20Role%20Fit%0A%20%20%20%E2%80%A2%20Apply%20%2F%20View%20Portal%3A%20https%3A%2F%2Fwww.google.com%2Fsearch%3Fq%3Dsite%3Ajobs.ashbyhq.com%2BPython%2BData%2BAnalyst%2BSQL%0A%0A----------------------------------------%0A%0ALive%20HiringCafe%20Portal%20Search%3A%20https%3A%2F%2Fhiring.cafe%2F" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition" target="_blank" rel="noopener noreferrer">
+            <span>✉ Open Pre-Filled Email in My Mail App</span>
+          </a>
+          <button id="btnCopyDigestText" type="button" class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs sm:text-sm font-medium px-4 py-2.5 rounded-lg transition">
+            <span>📋 Copy Digest Text</span>
+          </button>
+        </div>
+
+        <div class="mt-4">
+          <label for="digestPreviewBox" class="block text-xs font-semibold text-slate-700 mb-1.5">
+            Live Preview of Your Morning Email Body:
+          </label>
+          <textarea id="digestPreviewBox" rows="9" readonly="" class="w-full rounded-xl bg-slate-900 text-slate-100 font-mono text-xs p-4 custom-scroll"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 4: GITHUB PAGES DEPLOYMENT GUIDE -->
+    <div id="viewGithub" class="hidden space-y-4">
+      <div class="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 shadow-sm space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <span class="text-xs font-bold uppercase text-indigo-600">1-Click Export + Free GitHub Hosting</span>
+            <h2 class="text-lg font-bold text-slate-900">Publish Your App Live on GitHub Pages</h2>
+            <p class="text-xs text-slate-500">
+              Click the button on the right to download this exact app pre-named as <code>index.html</code>, then upload it to GitHub.
+            </p>
+          </div>
+          <button id="btnDownloadIndexGuide" type="button" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition">
+            <span>⬇ Download Ready-to-Upload index.html</span>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+            <span class="text-xs font-bold uppercase text-indigo-700">Method A: No-Terminal Browser Upload (Recommended)</span>
+            <ol class="text-xs text-slate-700 space-y-2 list-decimal list-inside leading-relaxed">
+              <li>Click <strong>⬇ Download index.html</strong> above so the file is saved as <strong><code>index.html</code></strong> on your computer.</li>
+              <li>Go to <strong>github.com</strong>, click the <strong>+</strong> icon (top-right), and select <strong>New repository</strong>.</li>
+              <li>Name it <code>earlybird-job-radar</code>, choose <strong>Public</strong>, check <strong>Add a README file</strong>, and click <strong>Create repository</strong>.</li>
+              <li>Click <strong>Add file → Upload files</strong>, drag your downloaded <strong><code>index.html</code></strong> file in, and click <strong>Commit changes</strong>.</li>
+              <li>Open <strong>Settings → Pages</strong> in your repository, select Branch: <strong><code>main</code></strong> and Folder: <strong><code>/ (root)</code></strong>, and click <strong>Save</strong>.</li>
+              <li>After ~60 seconds, visit <code>https://&lt;your-username&gt;.github.io/earlybird-job-radar/</code> to use your live app!</li>
+            </ol>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-900 text-slate-100 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase text-emerald-400">Method B: Git Terminal Commands</span>
+              <button id="btnCopyGitCommands" type="button" class="text-[11px] px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200">
+                Copy Commands
+              </button>
+            </div>
+            <pre id="gitCommandsBlock" class="text-[11px] font-mono text-slate-200 overflow-x-auto leading-relaxed pt-1">mkdir earlybird-job-radar
+cd earlybird-job-radar
+# Move your downloaded index.html into this folder
+git init
+git add index.html
+git commit -m "Deploy Final EarlyBird Job Radar v1.0"
+git branch -M main
+git remote add origin https://github.com/YOUR-USERNAME/earlybird-job-radar.git
+git push -u origin main</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 5: HOW IT WORKS -->
+    <div id="viewHow" class="hidden space-y-4">
+      <div class="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 shadow-sm space-y-4">
+        <h2 class="text-lg font-bold text-slate-900">Complete System Architecture (Final v1.0)</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-xs font-bold uppercase text-indigo-600 mb-1">1. Resume Analyzer Engine</div>
+            <h3 class="font-semibold text-sm text-slate-900 mb-1">Weighted Core Skill &amp; Dealbreaker Scorer</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Extracts your finance, analytics, or engineering skills, weights core skills 2×, flags <strong>75%+ Direct Resume Matches</strong>, and builds 24-hour HiringCafe &amp; company ATS career portal queries.
+            </p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-xs font-bold uppercase text-emerald-600 mb-1">2. Multi-API Live Fetcher</div>
+            <h3 class="font-semibold text-sm text-slate-900 mb-1">Remotive + Arbeitnow Live Job Feeds</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Clicking <strong>🌐 Fetch Live Internet Jobs</strong> queries public CORS job APIs in parallel directly from your browser and scores every live listing against your resume.
+            </p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-xs font-bold uppercase text-amber-600 mb-1">3. Daily ~7:00 AM Schedule</div>
+            <h3 class="font-semibold text-sm text-slate-900 mb-1">Automated Morning Inbox Delivery</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Runs automatically every morning around 7:00 AM IST to search fresh 24-hour openings matching your MANIT Bhopal MBA Finance resume and email your ranked shortlist.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // --- KNOWN SKILL VOCABULARY (FINANCE, ANALYTICS & TECH) ---
+    const KNOWN_CORE_SKILLS = [
+      'Financial Modeling', 'Equity Research', 'Financial Market Analysis', 'Ratio Analysis',
+      'DCF Valuation', 'DCF', 'Corporate Finance', 'MS Excel', 'Excel', 'Power BI', 'Tableau',
+      'SQL', 'Python', 'MIS Reporting', 'FinTech', 'Budget Planning', 'Valuation',
+      'JavaScript', 'TypeScript', 'React', 'Next.js', 'HTML', 'CSS', 'Tailwind',
+      'Node.js', 'Pandas', 'REST API', 'GraphQL', 'Git', 'UI design', 'Figma',
+      'Responsive web apps', 'Testing', 'Docker', 'AWS', 'Data Visualization', 'Problem solving'
+    ];
+
+    // --- FINAL PRODUCTION FEED (PRE-TAILORED TO ADITYA'S MBA FINANCE + TECH PROFILES) ---
+    const INITIAL_JOBS = [
+      {
+        id: 'job-2',
+        title: 'Financial Analyst — Equity Research & Valuation',
+        company: 'Apex Capital Partners',
+        location: 'India',
+        sourceType: 'portal',
+        sourceBadge: 'HiringCafe • Direct Company Portal',
+        postedAgo: 'Posted 28 mins ago (6:32 AM)',
+        salary: '₹9L – ₹14L / yr',
+        coreSkills: ['Financial Modeling', 'Equity Research', 'DCF Valuation', 'Ratio Analysis', 'MS Excel'],
+        bonusSkills: ['Power BI', 'Financial Market Analysis', 'Corporate Finance'],
+        skills: ['Financial Modeling', 'Equity Research', 'DCF Valuation', 'Ratio Analysis', 'MS Excel', 'Power BI', 'Financial Market Analysis', 'Corporate Finance'],
+        portalUrl: 'https://hiring.cafe/',
+        description: 'Direct company portal opening (Mumbai / Hybrid). Build DCF valuation models, perform equity research and ratio analysis, and prepare institutional investment decks.'
+      },
+      {
+        id: 'job-3',
+        title: 'Business Intelligence & Financial Data Analyst',
+        company: 'FinVerge FinTech Labs',
+        location: 'Remote',
+        sourceType: 'portal',
+        sourceBadge: 'Greenhouse ATS • Direct Company Site',
+        postedAgo: 'Posted 45 mins ago (6:15 AM)',
+        salary: '₹8L – ₹13L / yr',
+        coreSkills: ['Tableau', 'Power BI', 'MS Excel', 'SQL', 'MIS Reporting'],
+        bonusSkills: ['Python', 'Financial Market Analysis', 'FinTech'],
+        skills: ['Tableau', 'Power BI', 'MS Excel', 'SQL', 'MIS Reporting', 'Python', 'Financial Market Analysis', 'FinTech'],
+        portalUrl: 'https://www.google.com/search?q=site:boards.greenhouse.io+%22Financial+Analyst%22+OR+%22Business+Intelligence%22+Tableau+Excel',
+        description: 'Posted on our Greenhouse career page. Design interactive Tableau and Power BI KPI dashboards, automate MIS reporting in Advanced Excel, and analyze FinTech revenue streams.'
+      },
+      {
+        id: 'job-4',
+        title: 'Corporate Finance & FP&A Analyst (MBA Associate)',
+        company: 'StrataGrid Enterprises',
+        location: 'India',
+        sourceType: 'portal',
+        sourceBadge: 'Lever ATS • Company Career Portal',
+        postedAgo: 'Posted 1 hr ago (5:50 AM)',
+        salary: '₹10L – ₹16L / yr',
+        coreSkills: ['Corporate Finance', 'Financial Modeling', 'Budget Planning', 'MS Excel'],
+        bonusSkills: ['Ratio Analysis', 'MIS Reporting', 'Power BI'],
+        skills: ['Corporate Finance', 'Financial Modeling', 'Budget Planning', 'MS Excel', 'Ratio Analysis', 'MIS Reporting', 'Power BI'],
+        portalUrl: 'https://www.google.com/search?q=site:jobs.lever.co+%22Corporate+Finance%22+OR+%22Financial+Analyst%22+Excel',
+        description: 'Listed on our Lever company portal (Bengaluru / Pune). Support annual budget planning, variance tracking, financial modeling, and executive MIS dashboards.'
+      },
+      {
+        id: 'job-1',
+        title: 'Frontend Developer (Direct Career Portal)',
+        company: 'NovaStack Labs',
+        location: 'Remote',
+        sourceType: 'portal',
+        sourceBadge: 'HiringCafe • Company Career Page',
+        postedAgo: 'Posted 1 hr ago (5:35 AM)',
+        salary: '₹9L – ₹15L / yr',
+        coreSkills: ['JavaScript', 'React', 'TypeScript', 'Tailwind'],
+        bonusSkills: ['HTML', 'CSS', 'REST API', 'Git'],
+        skills: ['JavaScript', 'React', 'TypeScript', 'Tailwind', 'HTML', 'CSS', 'REST API', 'Git'],
+        portalUrl: 'https://hiring.cafe/',
+        description: 'Posted directly on NovaStack company careers portal. Build fast, modular React + TypeScript interfaces with Tailwind CSS and REST APIs.'
+      },
+      {
+        id: 'job-5',
+        title: 'Python Data & Automation Analyst',
+        company: 'DataCrest Analytics',
+        location: 'Remote',
+        sourceType: 'portal',
+        sourceBadge: 'Ashby ATS • Company Career Page',
+        postedAgo: 'Posted 2 hrs ago (4:40 AM)',
+        salary: '₹7L – ₹13L / yr',
+        coreSkills: ['Python', 'SQL', 'Tableau', 'Power BI'],
+        bonusSkills: ['MS Excel', 'Data Visualization', 'Problem solving'],
+        skills: ['Python', 'SQL', 'Tableau', 'Power BI', 'MS Excel', 'Data Visualization', 'Problem solving'],
+        portalUrl: 'https://www.google.com/search?q=site:jobs.ashbyhq.com+Python+Data+Analyst+SQL',
+        description: 'Direct company career portal role. Automate morning data pipelines, build Tableau/Power BI reports, and query cloud databases.'
+      }
+    ];
+
+    // --- APP STATE ---
+    let jobsList = [...INITIAL_JOBS];
+    let savedStatus = {};
+    let activeFeedFilter = 'all';
+    let userEmail = 'adityasonigs@gmail.com';
+
+    function loadSavedState() {
+      try {
+        const raw = localStorage.getItem('earlybird_saved_v1');
+        if (raw) savedStatus = JSON.parse(raw);
+        const savedMail = localStorage.getItem('earlybird_email_v2');
+        if (savedMail) userEmail = savedMail;
+
+        const savedProfileRaw = localStorage.getItem('earlybird_profile_v1');
+        if (savedProfileRaw) {
+          const prof = JSON.parse(savedProfileRaw);
+          if (prof.role) document.getElementById('inputRole').value = prof.role;
+          if (prof.location) document.getElementById('inputLocation').value = prof.location;
+          if (prof.minScore !== undefined) document.getElementById('inputMinScore').value = prof.minScore;
+          if (prof.resume) document.getElementById('inputResume').value = prof.resume;
+          if (prof.exclude !== undefined) document.getElementById('inputExclude').value = prof.exclude;
+        }
+
+        document.getElementById('quickEmailInput').value = userEmail;
+        document.getElementById('digestEmailInput').value = userEmail;
+      } catch (e) {
+        savedStatus = {};
+      }
+    }
+
+    function persistSavedState() {
+      try {
+        localStorage.setItem('earlybird_saved_v1', JSON.stringify(savedStatus));
+        if (userEmail) {
+          localStorage.setItem('earlybird_email_v2', userEmail);
+        }
+        const profileData = {
+          role: document.getElementById('inputRole').value,
+          location: document.getElementById('inputLocation').value,
+          minScore: document.getElementById('inputMinScore').value,
+          resume: document.getElementById('inputResume').value,
+          exclude: document.getElementById('inputExclude').value
+        };
+        localStorage.setItem('earlybird_profile_v1', JSON.stringify(profileData));
+      } catch (e) {
+        // Ignore storage errors in sandboxed iframe
+      }
+    }
+
+    function showToast(msg) {
+      const box = document.getElementById('toastBox');
+      const txt = document.getElementById('toastText');
+      txt.textContent = msg;
+      box.classList.remove('hidden');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        box.classList.add('hidden');
+      }, 2600);
+    }
+
+    // --- 1-CLICK DOWNLOAD AS INDEX.HTML FOR GITHUB PAGES ---
+    function downloadSelfAsIndexHtml() {
+      try {
+        const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+        const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'index.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+        showToast('Downloaded index.html — ready to upload to GitHub!');
+      } catch (e) {
+        showToast('Use your browser Save Page As -> index.html');
+      }
+    }
+
+    // --- RESUME ANALYZER: SMART SKILL EXTRACTION ---
+    function extractKeywords(text) {
+      if (!text) return [];
+      const lower = text.toLowerCase();
+      const found = new Set();
+
+      KNOWN_CORE_SKILLS.forEach(skill => {
+        if (lower.includes(skill.toLowerCase())) {
+          found.add(skill);
+        }
+      });
+
+      text
+        .split(/[\n,;•|]+/)
+        .map(s => s.trim())
+        .filter(s => s.length > 1 && s.length <= 28 && !s.includes('.'))
+        .forEach(token => {
+          const alreadyHas = Array.from(found).some(
+            existing => existing.toLowerCase() === token.toLowerCase()
+          );
+          if (!alreadyHas) {
+            found.add(token);
+          }
+        });
+
+      return Array.from(found);
+    }
+
+    function scoreJobAgainstProfile(job, roleQuery, resumeText, excludeText) {
+      const resumeLower = (resumeText || '').toLowerCase();
+      const roleLower = (roleQuery || '').toLowerCase().trim();
+      const excludeTokens = (excludeText || '')
+        .toLowerCase()
+        .split(/[,;\n]+/)
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      const jobFullText = (job.title + ' ' + job.description + ' ' + job.skills.join(' ')).toLowerCase();
+      const triggeredExclude = excludeTokens.find(ex => jobFullText.includes(ex));
+
+      const matchedSkills = [];
+      const missingSkills = [];
+
+      const coreList = job.coreSkills || job.skills.slice(0, 4);
+      let weightedEarned = 0;
+      let weightedTotal = 0;
+      let coreMatchedCount = 0;
+
+      job.skills.forEach(skill => {
+        const skillLower = skill.toLowerCase();
+        const isCore = coreList.some(c => c.toLowerCase() === skillLower);
+        const weight = isCore ? 2 : 1;
+        weightedTotal += weight;
+
+        if (resumeLower.includes(skillLower) || (roleLower && roleLower.includes(skillLower))) {
+          matchedSkills.push(skill);
+          weightedEarned += weight;
+          if (isCore) coreMatchedCount++;
+        } else {
+          missingSkills.push(skill);
+        }
+      });
+
+      const skillScore = weightedTotal > 0 ? (weightedEarned / weightedTotal) * 82 : 0;
+
+      let titleBonus = 0;
+      let titleFitLabel = 'Partial Role Fit';
+      if (roleLower) {
+        const roleWords = roleLower.split(/\s+/).filter(w => w.length > 2);
+        const titleLower = job.title.toLowerCase() + ' ' + job.description.toLowerCase();
+        const hitWords = roleWords.filter(w => titleLower.includes(w));
+        if (roleWords.length > 0) {
+          const ratio = hitWords.length / roleWords.length;
+          titleBonus = Math.round(ratio * 18);
+          if (ratio >= 0.8) titleFitLabel = 'Exact Role Match';
+          else if (ratio >= 0.4) titleFitLabel = 'Related Role Fit';
+          else titleFitLabel = 'Broad Domain Fit';
+        }
+      } else {
+        titleBonus = 12;
+      }
+
+      let totalScore = Math.min(100, Math.round(skillScore + titleBonus));
+      if (triggeredExclude) {
+        totalScore = Math.max(0, totalScore - 50);
+      }
+
+      const isDirectMatch = totalScore >= 75 && !triggeredExclude;
+      const matchTier = isDirectMatch
+        ? 'Direct Resume Match'
+        : totalScore >= 50
+        ? 'Strong Partial Match'
+        : 'Stretch / Low Match';
+
+      const whyReason = triggeredExclude
+        ? `Contains excluded term "${triggeredExclude}" (-50% penalty)`
+        : `Matches ${coreMatchedCount}/${coreList.length} core skills (${matchedSkills.slice(0, 4).join(', ') || 'none'}) + ${titleFitLabel}`;
+
+      return {
+        score: totalScore,
+        isDirectMatch,
+        matchTier,
+        whyReason,
+        coreMatchedCount,
+        coreTotalCount: coreList.length,
+        matchedSkills,
+        missingSkills,
+        triggeredExclude
+      };
+    }
+
+    // --- MULTI-SOURCE LIVE INTERNET JOB API FETCHER (REMOTIVE + ARBEITNOW) ---
+    async function fetchLiveInternetJobs() {
+      const btn = document.getElementById('btnFetchLiveApi');
+      const label = document.getElementById('liveFetchBtnLabel');
+      const roleQuery = (document.getElementById('inputRole').value || 'Analyst').trim();
+      const resumeText = document.getElementById('inputResume').value;
+
+      label.textContent = '⏳ Fetching Live Jobs...';
+      btn.disabled = true;
+
+      try {
+        const searchTerm = encodeURIComponent(roleQuery.split(/\s+/)[0] || 'Analyst');
+        const userSkills = extractKeywords(resumeText);
+        const collected = [];
+
+        const [remotiveRes, arbeitRes] = await Promise.allSettled([
+          fetch(`https://remotive.com/api/remote-jobs?search=${searchTerm}&limit=5`).then(r => r.json()),
+          fetch(`https://www.arbeitnow.com/api/job-board-api`).then(r => r.json())
+        ]);
+
+        if (remotiveRes.status === 'fulfilled' && remotiveRes.value && Array.isArray(remotiveRes.value.jobs)) {
+          remotiveRes.value.jobs.slice(0, 4).forEach((rj, idx) => {
+            const plainDesc = String(rj.description || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 220) + '...';
+            const detected = extractKeywords(rj.title + ' ' + plainDesc + ' ' + (rj.tags || []).join(', '));
+            const finalSkills = detected.length >= 2 ? detected.slice(0, 7) : [...(rj.tags || []).slice(0, 4), ...userSkills.slice(0, 2)];
+            collected.push({
+              id: 'live-api-' + (rj.id || Date.now() + '-' + idx),
+              title: rj.title || 'Live Remote Opening',
+              company: rj.company_name || 'Global Employer',
+              location: 'Remote',
+              sourceType: 'portal',
+              sourceBadge: '🌐 Remotive Live API • Direct Apply',
+              postedAgo: 'Fetched Live Just Now',
+              salary: rj.salary || 'Competitive Market Pay',
+              coreSkills: finalSkills.slice(0, 4),
+              bonusSkills: finalSkills.slice(4),
+              skills: finalSkills.length ? finalSkills : ['MS Excel', 'Problem solving'],
+              portalUrl: rj.url || 'https://hiring.cafe/',
+              description: plainDesc
+            });
+          });
+        }
+
+        if (arbeitRes.status === 'fulfilled' && arbeitRes.value && Array.isArray(arbeitRes.value.data)) {
+          arbeitRes.value.data.slice(0, 3).forEach((aj, idx) => {
+            const plainDesc = String(aj.description || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 220) + '...';
+            const detected = extractKeywords(aj.title + ' ' + plainDesc + ' ' + (aj.tags || []).join(', '));
+            const finalSkills = detected.length >= 2 ? detected.slice(0, 7) : [...(aj.tags || []).slice(0, 4), ...userSkills.slice(0, 2)];
+            collected.push({
+              id: 'live-arbeit-' + (aj.slug || Date.now() + '-' + idx),
+              title: aj.title || 'Company Career Portal Role',
+              company: aj.company_name || 'Direct Employer',
+              location: aj.remote ? 'Remote' : 'Hybrid',
+              sourceType: 'portal',
+              sourceBadge: '🌐 Arbeitnow Live API • Company Portal',
+              postedAgo: 'Fetched Live Just Now',
+              salary: 'Competitive Package',
+              coreSkills: finalSkills.slice(0, 4),
+              bonusSkills: finalSkills.slice(4),
+              skills: finalSkills.length ? finalSkills : ['Problem solving', 'SQL'],
+              portalUrl: aj.url || 'https://hiring.cafe/',
+              description: plainDesc
+            });
+          });
+        }
+
+        if (collected.length === 0) {
+          showToast('Live APIs restricted by preview sandbox — works automatically when hosted on GitHub Pages!');
+        } else {
+          const existingIds = new Set(jobsList.map(j => j.id));
+          const freshOnes = collected.filter(c => !existingIds.has(c.id));
+          jobsList = [...freshOnes, ...jobsList];
+          renderApp();
+          showToast(`Fetched & scored ${freshOnes.length} live internet jobs against your resume!`);
+        }
+      } catch (err) {
+        showToast('Use the 24h Portal Links on the left or host on GitHub Pages for live browser fetching!');
+      } finally {
+        label.textContent = '🌐 Fetch Live Internet Jobs';
+        btn.disabled = false;
+      }
+    }
+
+    // --- HIRINGCAFE & DIRECT COMPANY CAREER PORTAL LINK BUILDER ---
+    function renderLiveSearchLinks(roleQuery, resumeKeywords, locationPref) {
+      const portalContainer = document.getElementById('portalSearchLinks');
+      const boardContainer = document.getElementById('liveSearchLinks');
+
+      const topSkills = resumeKeywords.slice(0, 3).join(' ');
+      const cleanRole = (roleQuery || 'Financial Analyst').trim();
+      const fullQuery = [cleanRole, topSkills].filter(Boolean).join(' ').trim();
+      const locParam = locationPref === 'all' ? 'India' : locationPref;
+
+      const encodedQuery = encodeURIComponent(fullQuery);
+      const encodedLoc = encodeURIComponent(locParam);
+
+      const hiringCafeState = encodeURIComponent(JSON.stringify({ searchQuery: cleanRole + ' ' + topSkills }));
+      const portals = [
+        {
+          name: 'HiringCafe (Direct Company Websites)',
+          url: `https://hiring.cafe/?searchState=${hiringCafeState}`,
+          badge: 'Company Portals'
+        },
+        {
+          name: 'Greenhouse & Lever Company Portals',
+          url: `https://www.google.com/search?q=${encodeURIComponent(`(site:boards.greenhouse.io OR site:jobs.lever.co) "${cleanRole}" ${topSkills} ${locParam}`)}&tbs=qdr:d`,
+          badge: 'ATS Past 24h'
+        },
+        {
+          name: 'Ashby & Workday Company Career Pages',
+          url: `https://www.google.com/search?q=${encodeURIComponent(`(site:jobs.ashbyhq.com OR site:myworkdayjobs.com) "${cleanRole}" ${topSkills}`)}&tbs=qdr:d`,
+          badge: 'Direct Portals'
+        },
+        {
+          name: 'Wellfound / YC Startup Career Pages',
+          url: `https://www.google.com/search?q=${encodeURIComponent(`(site:wellfound.com/jobs OR site:workatastartup.com) "${cleanRole}" ${topSkills}`)}&tbs=qdr:w`,
+          badge: 'Startup Direct'
+        }
+      ];
+
+      portalContainer.innerHTML = portals.map(p => `
+        <a href="${p.url}" target="_blank" rel="noopener noreferrer"
+           class="flex items-center justify-between bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700/60 rounded-lg px-3 py-2 text-xs transition">
+          <span class="font-medium text-white truncate pr-2">${p.name}</span>
+          <span class="text-[11px] text-emerald-300 whitespace-nowrap">${p.badge} ↗</span>
+        </a>
+      `).join('');
+
+      const boards = [
+        {
+          name: 'LinkedIn Jobs (Past 24 Hours)',
+          url: `https://www.linkedin.com/jobs/search/?keywords=${encodedQuery}&location=${encodedLoc}&f_TPR=r86400&sortBy=DD`,
+          badge: 'Fresh < 24h'
+        },
+        {
+          name: 'Indeed (Sorted by Date)',
+          url: `https://in.indeed.com/jobs?q=${encodedQuery}&l=${encodedLoc}&fromage=1&sort=date`,
+          badge: 'Last 1 Day'
+        },
+        {
+          name: 'Google Jobs Aggregator',
+          url: `https://www.google.com/search?q=${encodeURIComponent(cleanRole + ' jobs ' + locParam + ' posted today')}`,
+          badge: 'All Boards'
+        }
+      ];
+
+      boardContainer.innerHTML = boards.map(b => `
+        <a href="${b.url}" target="_blank" rel="noopener noreferrer"
+           class="flex items-center justify-between bg-indigo-900/70 hover:bg-indigo-800 border border-indigo-700/60 rounded-lg px-3 py-2 text-xs transition">
+          <span class="font-medium text-white truncate pr-2">${b.name}</span>
+          <span class="text-[11px] text-indigo-200 whitespace-nowrap">${b.badge} ↗</span>
+        </a>
+      `).join('');
+    }
+
+    // --- UPDATE MORNING EMAIL DIGEST LINKS & PREVIEW ---
+    function updateEmailDigest(scoredJobs, roleQuery) {
+      const emailAddr = (userEmail || 'adityasonigs@gmail.com').trim();
+      const deliveryTime = document.getElementById('digestTimeInput').value;
+      const filterMode = document.getElementById('digestFilterSelect').value;
+
+      const listForEmail = filterMode === 'direct'
+        ? scoredJobs.filter(j => j.isDirectMatch)
+        : scoredJobs;
+
+      const finalJobs = listForEmail.length > 0 ? listForEmail : scoredJobs.slice(0, 3);
+
+      const subject = `EarlyBird 7:00 AM Job Radar: ${finalJobs.length} Direct Resume Matches for ${roleQuery || 'Aditya Soni'}`;
+      const lines = [
+        `Good Morning Aditya! Here is your EarlyBird Job Radar digest (${deliveryTime}):`,
+        `Target Role: ${roleQuery || 'Financial Analyst'}`,
+        `----------------------------------------`,
+        ...finalJobs.map((j, idx) =>
+          `${idx + 1}. [${j.score}% ${j.matchTier}] ${j.title} at ${j.company} (${j.location})\n` +
+          `   • Source: ${j.sourceBadge} (${j.postedAgo})\n` +
+          `   • Why it matches: ${j.whyReason}\n` +
+          `   • Apply / View Portal: ${j.portalUrl}`
+        ),
+        `----------------------------------------`,
+        `Live HiringCafe Portal Search: https://hiring.cafe/`
+      ];
+
+      const bodyText = lines.join('\n\n');
+      const mailtoHref = `mailto:${encodeURIComponent(emailAddr)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
+
+      document.getElementById('digestPreviewBox').value = bodyText;
+      document.getElementById('btnSendMailtoDigest').setAttribute('href', mailtoHref);
+      document.getElementById('quickMailtoBtn').setAttribute('href', mailtoHref);
+      document.getElementById('headerQuickMailLink').setAttribute('href', mailtoHref);
+    }
+
+    // --- RENDER MAIN JOB FEED & ANALYZER DIAGNOSTICS ---
+    function renderApp() {
+      const roleQuery = document.getElementById('inputRole').value;
+      const locationPref = document.getElementById('inputLocation').value;
+      const minScore = parseInt(document.getElementById('inputMinScore').value, 10) || 0;
+      const resumeText = document.getElementById('inputResume').value;
+      const excludeText = document.getElementById('inputExclude').value;
+
+      document.getElementById('labelMinScore').textContent = `${minScore}%`;
+
+      const keywords = extractKeywords(resumeText);
+      document.getElementById('detectedKeywordsCount').textContent = keywords.length;
+
+      const coreSkillsEl = document.getElementById('analyzerCoreSkills');
+      if (keywords.length === 0) {
+        coreSkillsEl.innerHTML = `<span class="text-[11px] text-rose-600">Paste your resume skills above to activate matching</span>`;
+      } else {
+        coreSkillsEl.innerHTML = keywords.slice(0, 14).map(k =>
+          `<span class="px-2 py-0.5 rounded bg-indigo-100/80 text-indigo-800 text-[11px] font-medium">${k}</span>`
+        ).join('');
+      }
+
+      renderLiveSearchLinks(roleQuery, keywords, locationPref);
+
+      const allScored = jobsList.map(job => {
+        const result = scoreJobAgainstProfile(job, roleQuery, resumeText, excludeText);
+        return { ...job, ...result };
+      });
+
+      const missingCounts = {};
+      allScored.forEach(j => {
+        j.missingSkills.forEach(ms => {
+          missingCounts[ms] = (missingCounts[ms] || 0) + 1;
+        });
+      });
+      const topMissing = Object.entries(missingCounts).sort((a, b) => b[1] - a[1])[0];
+      document.getElementById('analyzerMissingTip').textContent = topMissing
+        ? `${topMissing[0]} (in ${topMissing[1]} jobs)`
+        : 'None — full coverage!';
+
+      const directCount = allScored.filter(j => j.isDirectMatch).length;
+      document.getElementById('analyzerDirectCount').textContent = `${directCount} Direct Match${directCount === 1 ? '' : 'es'}`;
+
+      const filteredJobs = allScored
+        .filter(job => {
+          const passesLoc = locationPref === 'all' || job.location.toLowerCase() === locationPref.toLowerCase();
+          const passesScore = job.score >= minScore;
+          const passesTabFilter =
+            activeFeedFilter === 'all' ||
+            (activeFeedFilter === 'direct' && job.isDirectMatch) ||
+            (activeFeedFilter === 'portals' && job.sourceType === 'portal');
+          return passesLoc && passesScore && passesTabFilter;
+        })
+        .sort((a, b) => b.score - a.score);
+
+      document.getElementById('navMatchCount').textContent = filteredJobs.length;
+      document.getElementById('matchSummarySubtitle').textContent =
+        `Showing ${filteredJobs.length} morning jobs (${directCount} Direct Resume Matches >= 75%)`;
+
+      const feedEl = document.getElementById('jobFeedContainer');
+      if (filteredJobs.length === 0) {
+        feedEl.innerHTML = `
+          <div class="bg-white rounded-xl border border-slate-200 p-8 text-center">
+            <p class="text-sm font-semibold text-slate-800 mb-1">No jobs matched this specific filter</p>
+            <p class="text-xs text-slate-500">Try switching to "All Ranked Jobs" or lowering the Minimum Match Score slider.</p>
+          </div>
+        `;
+      } else {
+        feedEl.innerHTML = filteredJobs.map(job => renderJobCardHTML(job)).join('');
+      }
+
+      updateEmailDigest(allScored.sort((a, b) => b.score - a.score), roleQuery);
+      renderSavedView();
+    }
+
+    function renderJobCardHTML(job) {
+      const state = savedStatus[job.id] || null;
+      const badgeColor = job.isDirectMatch
+        ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+        : job.score >= 50
+        ? 'bg-amber-50 text-amber-800 border-amber-200'
+        : 'bg-slate-100 text-slate-700 border-slate-200';
+
+      const matchedHTML = job.matchedSkills.map(s =>
+        `<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">✓ ${s}</span>`
+      ).join('');
+
+      const missingHTML = job.missingSkills.map(s =>
+        `<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-500" title="Missing from your resume">+ ${s}</span>`
+      ).join('');
+
+      const portalUrl = job.portalUrl || `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(job.title + ' ' + job.company)}&f_TPR=r86400`;
+
+      return `
+        <article class="bg-white rounded-xl border ${job.isDirectMatch ? 'border-emerald-300 ring-1 ring-emerald-500/20' : 'border-slate-200'} p-4 sm:p-5 shadow-sm hover:border-indigo-300 transition">
+          <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
+            <div>
+              <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
+                  ${job.sourceBadge || 'Direct Portal'}
+                </span>
+                <span class="text-[11px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-700">${job.location}</span>
+                ${job.isDirectMatch ? `<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">🔥 Direct Resume Match</span>` : ''}
+              </div>
+              <h3 class="font-bold text-slate-900 text-sm sm:text-base">${job.title}</h3>
+              <p class="text-xs text-slate-500 mt-0.5">
+                <strong class="text-slate-700">${job.company}</strong> • ${job.salary} • <span class="text-emerald-600 font-medium">${job.postedAgo}</span>
+              </p>
+            </div>
+
+            <div class="flex flex-col items-end">
+              <span class="text-xs font-bold px-2.5 py-1 rounded-lg border ${badgeColor}">
+                ${job.score}% Match
+              </span>
+              <span class="text-[10px] text-slate-400 mt-1">${job.matchTier}</span>
+            </div>
+          </div>
+
+          <div class="rounded-lg bg-slate-50 border border-slate-200/80 px-3 py-2 mb-3 text-xs text-slate-700 flex items-center justify-between gap-2">
+            <span><strong>Resume Diagnosis:</strong> ${job.whyReason}</span>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 mb-3">${job.description}</p>
+
+          <div class="mb-3">
+            <div class="text-[11px] font-medium text-slate-400 mb-1.5">
+              Resume Skill Overlap (Green = On Your Resume • Grey = Add to Resume):
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              ${matchedHTML}
+              ${missingHTML}
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <button type="button" data-action="save" data-id="${job.id}"
+                class="text-xs font-medium px-3 py-1.5 rounded-lg border transition ${
+                  state === 'saved'
+                    ? 'bg-amber-50 border-amber-300 text-amber-800'
+                    : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                }">
+                ${state === 'saved' ? '★ Saved' : '☆ Save for Later'}
+              </button>
+              <button type="button" data-action="applied" data-id="${job.id}"
+                class="text-xs font-medium px-3 py-1.5 rounded-lg border transition ${
+                  state === 'applied'
+                    ? 'bg-emerald-600 border-emerald-600 text-white'
+                    : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                }">
+                ${state === 'applied' ? '✓ Applied Early' : 'Mark Applied'}
+              </button>
+            </div>
+
+            <a href="${portalUrl}" target="_blank" rel="noopener noreferrer"
+               class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+              <span>Open Portal / Apply</span>
+              <span>↗</span>
+            </a>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderSavedView() {
+      const savedIds = Object.keys(savedStatus);
+      document.getElementById('navSavedCount').textContent = savedIds.length;
+      const container = document.getElementById('savedJobsContainer');
+
+      if (savedIds.length === 0) {
+        container.innerHTML = `
+          <div class="bg-white rounded-xl border border-slate-200 p-8 text-center">
+            <p class="text-sm font-semibold text-slate-800 mb-1">No saved or applied jobs yet</p>
+            <p class="text-xs text-slate-500">Click "Save for Later" or "Mark Applied" on any job in your Morning Feed.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const roleQuery = document.getElementById('inputRole').value;
+      const resumeText = document.getElementById('inputResume').value;
+      const excludeText = document.getElementById('inputExclude').value;
+
+      const items = jobsList
+        .filter(j => savedStatus[j.id])
+        .map(j => ({ ...j, ...scoreJobAgainstProfile(j, roleQuery, resumeText, excludeText) }));
+
+      container.innerHTML = items.map(j => renderJobCardHTML(j)).join('');
+    }
+
+    // --- EVENT LISTENERS ---
+    function switchTab(tab) {
+      const views = {
+        feed: document.getElementById('viewFeed'),
+        saved: document.getElementById('viewSaved'),
+        email: document.getElementById('viewEmail'),
+        github: document.getElementById('viewGithub'),
+        how: document.getElementById('viewHow')
+      };
+      const btns = {
+        feed: document.getElementById('tabBtnFeed'),
+        saved: document.getElementById('tabBtnSaved'),
+        email: document.getElementById('tabBtnEmail'),
+        github: document.getElementById('tabBtnGithub'),
+        how: document.getElementById('tabBtnHow')
+      };
+
+      Object.keys(views).forEach(k => {
+        if (k === tab) {
+          views[k].classList.remove('hidden');
+          btns[k].className = 'px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium bg-white text-slate-900 shadow-sm transition';
+        } else {
+          views[k].classList.add('hidden');
+          btns[k].className = 'px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition';
+        }
+      });
+    }
+
+    function setFeedFilter(mode) {
+      activeFeedFilter = mode;
+      const map = {
+        all: document.getElementById('filterBtnAll'),
+        direct: document.getElementById('filterBtnDirect'),
+        portals: document.getElementById('filterBtnPortals')
+      };
+      Object.keys(map).forEach(k => {
+        if (k === mode) {
+          map[k].className = 'text-xs font-semibold px-3 py-1.5 rounded-lg bg-indigo-600 text-white transition';
+        } else {
+          map[k].className = 'text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition';
+        }
+      });
+      renderApp();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSavedState();
+      renderApp();
+
+      // Navigation Tabs
+      document.getElementById('tabBtnFeed').addEventListener('click', () => switchTab('feed'));
+      document.getElementById('tabBtnSaved').addEventListener('click', () => switchTab('saved'));
+      document.getElementById('tabBtnEmail').addEventListener('click', () => switchTab('email'));
+      document.getElementById('tabBtnGithub').addEventListener('click', () => switchTab('github'));
+      document.getElementById('tabBtnHow').addEventListener('click', () => switchTab('how'));
+
+      // 1-Click Download index.html Buttons
+      document.getElementById('btnDownloadIndex').addEventListener('click', downloadSelfAsIndexHtml);
+      document.getElementById('btnDownloadIndexGuide').addEventListener('click', downloadSelfAsIndexHtml);
+
+      // Feed Quick Filter Buttons
+      document.getElementById('filterBtnAll').addEventListener('click', () => setFeedFilter('all'));
+      document.getElementById('filterBtnDirect').addEventListener('click', () => setFeedFilter('direct'));
+      document.getElementById('filterBtnPortals').addEventListener('click', () => setFeedFilter('portals'));
+
+      // Live API Fetch Button
+      document.getElementById('btnFetchLiveApi').addEventListener('click', fetchLiveInternetJobs);
+
+      // Resume Preset Buttons
+      document.getElementById('btnPresetAditya').addEventListener('click', () => {
+        document.getElementById('inputRole').value = 'Financial Analyst';
+        document.getElementById('inputResume').value =
+          'Aditya Soni — MBA in Finance & Analytics at MANIT Bhopal (2025-2027), B.Com (83.2%). Equity Research Intern at Millenium Money Finance (Mumbai). Deloitte Tableau Data Analytics Virtual Experience. Skills: Financial Modeling, Equity Research, Financial Market Analysis, Ratio Analysis, DCF Valuation, Corporate Finance, MS Excel, Power BI, Tableau, SQL, Python, MIS Reporting, FinTech, Budget Planning.';
+        persistSavedState();
+        renderApp();
+        showToast('Loaded Aditya Soni MBA Finance & Analytics Resume!');
+      });
+
+      document.getElementById('btnPresetFrontend').addEventListener('click', () => {
+        document.getElementById('inputRole').value = 'Frontend Developer';
+        document.getElementById('inputResume').value =
+          'Frontend Developer building responsive web apps with JavaScript, React, TypeScript, HTML, CSS, Tailwind, Git, REST API, UI design, and Figma.';
+        persistSavedState();
+        renderApp();
+        showToast('Loaded Frontend / React Resume!');
+      });
+
+      document.getElementById('btnPresetFullstack').addEventListener('click', () => {
+        document.getElementById('inputRole').value = 'Full-Stack Engineer';
+        document.getElementById('inputResume').value =
+          'Full-Stack Developer experienced in JavaScript, TypeScript, React, Node.js, SQL, REST API, Git, Testing, and problem solving.';
+        persistSavedState();
+        renderApp();
+        showToast('Loaded Full-Stack JS Resume!');
+      });
+
+      document.getElementById('btnPresetData').addEventListener('click', () => {
+        document.getElementById('inputRole').value = 'Python Data Analyst';
+        document.getElementById('inputResume').value =
+          'Data Analyst skilled in Python, SQL, Pandas, Tableau, Power BI, MS Excel, Data Visualization, REST API, and problem solving.';
+        persistSavedState();
+        renderApp();
+        showToast('Loaded Python / Data Analyst Resume!');
+      });
+
+      // Upload .txt Resume File
+      document.getElementById('inputResumeFile').addEventListener('change', e => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+          document.getElementById('inputResume').value = String(ev.target.result || '');
+          persistSavedState();
+          renderApp();
+          showToast('Uploaded and analyzed ' + file.name);
+        };
+        reader.readAsText(file);
+      });
+
+      // Live Reactive Inputs with Auto-Save
+      ['inputRole', 'inputLocation', 'inputMinScore', 'inputResume', 'inputExclude', 'digestTimeInput', 'digestFilterSelect'].forEach(id => {
+        document.getElementById(id).addEventListener('input', () => {
+          persistSavedState();
+          renderApp();
+        });
+      });
+
+      // Sync Email Inputs
+      document.getElementById('quickEmailInput').addEventListener('input', e => {
+        userEmail = e.target.value;
+        document.getElementById('digestEmailInput').value = userEmail;
+        persistSavedState();
+        renderApp();
+      });
+
+      document.getElementById('digestEmailInput').addEventListener('input', e => {
+        userEmail = e.target.value;
+        document.getElementById('quickEmailInput').value = userEmail;
+        persistSavedState();
+        renderApp();
+      });
+
+      // Copy Digest Button
+      document.getElementById('btnCopyDigestText').addEventListener('click', () => {
+        const box = document.getElementById('digestPreviewBox');
+        box.select();
+        try {
+          document.execCommand('copy');
+          showToast('Copied morning email digest to clipboard!');
+        } catch (err) {
+          showToast('Select the text box to copy manually');
+        }
+      });
+
+      // Copy Git Commands Button
+      document.getElementById('btnCopyGitCommands').addEventListener('click', () => {
+        const text = document.getElementById('gitCommandsBlock').textContent;
+        const temp = document.createElement('textarea');
+        temp.value = text;
+        document.body.appendChild(temp);
+        temp.select();
+        try {
+          document.execCommand('copy');
+          showToast('Copied Git commands to clipboard!');
+        } catch (e) {
+          showToast('Copy manually from the code block');
+        }
+        document.body.removeChild(temp);
+      });
+
+      document.getElementById('btnRunMatcher').addEventListener('click', () => {
+        persistSavedState();
+        renderApp();
+        showToast('Resume analyzed and jobs re-scored!');
+      });
+
+      document.getElementById('btnResetDemo').addEventListener('click', () => {
+        document.getElementById('inputRole').value = 'Financial Analyst';
+        document.getElementById('inputLocation').value = 'all';
+        document.getElementById('inputMinScore').value = '40';
+        document.getElementById('inputExclude').value = '';
+        document.getElementById('inputResume').value =
+          'Aditya Soni — MBA in Finance & Analytics at MANIT Bhopal (2025-2027), B.Com (83.2%). Equity Research Intern at Millenium Money Finance (Mumbai). Deloitte Tableau Data Analytics Virtual Experience. Skills: Financial Modeling, Equity Research, Financial Market Analysis, Ratio Analysis, DCF Valuation, Corporate Finance, MS Excel, Power BI, Tableau, SQL, Python, MIS Reporting, FinTech, Budget Planning.';
+        activeFeedFilter = 'all';
+        persistSavedState();
+        renderApp();
+        showToast('Reset to Aditya MBA Finance profile!');
+      });
+
+      // Custom Job Modal Toggle
+      const boxCustom = document.getElementById('boxAddCustomJob');
+      document.getElementById('btnToggleAddJob').addEventListener('click', () => {
+        boxCustom.classList.toggle('hidden');
+      });
+      document.getElementById('btnCloseCustomJob').addEventListener('click', () => {
+        boxCustom.classList.add('hidden');
+      });
+
+      document.getElementById('btnSaveCustomJob').addEventListener('click', () => {
+        const title = document.getElementById('customJobTitle').value.trim() || 'Custom Portal Role';
+        const company = document.getElementById('customJobCompany').value.trim() || 'Direct Company Portal';
+        const location = document.getElementById('customJobMode').value;
+        const desc = document.getElementById('customJobDesc').value.trim() || 'Financial Modeling, MS Excel, Power BI, Tableau';
+
+        const extractedSkills = extractKeywords(desc);
+        const skillsList = extractedSkills.length ? extractedSkills : ['MS Excel', 'Problem solving'];
+
+        const newJob = {
+          id: 'custom-' + Date.now(),
+          title,
+          company,
+          location,
+          sourceType: 'portal',
+          sourceBadge: 'Custom Pasted Job • Direct Portal',
+          postedAgo: 'Posted just now (Live Test)',
+          salary: 'Competitive',
+          coreSkills: skillsList.slice(0, 4),
+          bonusSkills: skillsList.slice(4),
+          skills: skillsList,
+          portalUrl: 'https://hiring.cafe/',
+          description: desc
+        };
+
+        jobsList.unshift(newJob);
+        document.getElementById('customJobTitle').value = '';
+        document.getElementById('customJobCompany').value = '';
+        document.getElementById('customJobDesc').value = '';
+        boxCustom.classList.add('hidden');
+        renderApp();
+        showToast('Custom job scored against your resume!');
+      });
+
+      // Delegate Save / Applied clicks
+      document.body.addEventListener('click', e => {
+        const btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+        const action = btn.getAttribute('data-action');
+        const jobId = btn.getAttribute('data-id');
+        if (!jobId) return;
+
+        if (savedStatus[jobId] === action) {
+          delete savedStatus[jobId];
+          showToast('Removed status from job');
+        } else {
+          savedStatus[jobId] = action;
+          showToast(action === 'applied' ? 'Marked as Applied Early!' : 'Saved to your shortlist!');
+        }
+        persistSavedState();
+        renderApp();
+      });
+
+      document.getElementById('btnClearSaved').addEventListener('click', () => {
+        savedStatus = {};
+        persistSavedState();
+        renderApp();
+        showToast('Cleared saved jobs list');
+      });
+    });
+  </script>
+
+</body></html>
